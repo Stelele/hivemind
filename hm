@@ -1,0 +1,673 @@
+#!/usr/bin/env python3
+"""hivemind board command line interface."""
+
+import argparse
+import os
+import re
+import shutil
+import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+
+THRESHOLD = 3
+CORE_TOPICS = ["stack", "code-style", "architecture", "testing", "workflow", "communication"]
+KINDS = ["decision", "lesson", "preference", "inspiration", "observation", "question"]
+
+KEY_RE = re.compile(r"^([A-Za-z][A-Za-z0-9_-]*): (.*)$")
+BARE_KEY_RE = re.compile(r"^([A-Za-z][A-Za-z0-9_-]*):$")
+FOLDED_VALUES = {"|", ">", "|-", ">-", "|+", ">+", "|2", ">2"}
+ID_RE = re.compile(r"^\d{8}-\d{4}-[a-z0-9-]+$")
+ADR_RE = re.compile(r"^(\d+)-")
+ROW_ID_RE = re.compile(r"^\|\s*(\d{8}-\d{4}-[a-z0-9-]+)")
+INDEX_HEADER = "<!-- Generated file — do not edit -->"
+ROW_HEADER = "| title | kind | score | project links |"
+ROW_SEP = "| --- | --- | --- | --- |"
+
+
+class GitError(Exception):
+    pass
+
+
+class PostError(Exception):
+    pass
+
+
+def emit(msg: str = "") -> None:
+    print(msg)
+
+
+def die(msg: str, code: int = 1) -> None:
+    print(msg, file=sys.stderr)
+    sys.exit(code)
+
+
+def board_path() -> Path:
+    env = os.environ.get("HIVEMIND_BOARD")
+    if env:
+        return Path(env)
+    return Path(__file__).resolve().parent
+
+
+def _as_list(value) -> list:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value] if value else []
+    return list(value)
+
+
+def _slug(text: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:48].strip("-")
+
+
+def _parse_value(raw: str, where: str):
+    if raw == "-":
+        return ""
+    if raw in FOLDED_VALUES:
+        raise PostError(f"{where}: multi-line/folded scalars are not supported")
+    if re.match(r"^\[.*\]$", raw):
+        inner = raw[1:-1].strip()
+        if not inner:
+            return []
+        return [part.strip() for part in inner.split(",")]
+    if raw != raw.strip():
+        raise PostError(f"{where}: leading/trailing whitespace in value")
+    return raw
+
+
+def _parse(text: str, where: str) -> tuple:
+    lines = text.split("\n")
+    if not lines or lines[0] != "---":
+        raise PostError(f"{where}: missing opening --- frontmatter delimiter")
+    meta = {}
+    index = 1
+    closed = False
+    while index < len(lines):
+        line = lines[index]
+        if line == "---":
+            closed = True
+            index += 1
+            break
+        if line[:1] in (" ", "\t"):
+            kind = "tab indentation" if line[:1] == "\t" else "indented line"
+            raise PostError(
+                f"{where}:{index + 1}: {kind} in frontmatter "
+                "(nested maps and multi-line scalars are not supported)"
+            )
+        if line == "":
+            raise PostError(f"{where}:{index + 1}: empty line in frontmatter")
+        match = KEY_RE.match(line)
+        if not match:
+            bare = BARE_KEY_RE.match(line)
+            if bare:
+                raise PostError(
+                    f"{where}:{index + 1}: key '{bare.group(1)}' has no value "
+                    "(nested maps are not supported)"
+                )
+            raise PostError(
+                f"{where}:{index + 1}: malformed frontmatter line, expected 'key: value'"
+            )
+        key = match.group(1)
+        if key in meta:
+            raise PostError(f"{where}:{index + 1}: duplicate key '{key}'")
+        try:
+            meta[key] = _parse_value(match.group(2), f"{where}:{index + 1}")
+        except PostError as exc:
+            raise PostError(str(exc)) from None
+        index += 1
+    if not closed:
+        raise PostError(f"{where}: missing closing --- frontmatter delimiter")
+    body_lines = lines[index:]
+    for offset, line in enumerate(body_lines):
+        if line == "---":
+            for later in body_lines[offset + 1:]:
+                if KEY_RE.match(later) or BARE_KEY_RE.match(later):
+                    raise PostError(f"{where}: frontmatter key found after body started")
+            break
+    return meta, "\n".join(body_lines)
+
+
+def load_post(path: Path) -> tuple:
+    path = Path(path)
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        die(f"cannot read {path}: {exc}")
+    try:
+        return _parse(text, str(path))
+    except PostError as exc:
+        die(str(exc))
+
+
+def _dump_value(value) -> str:
+    if value is None:
+        return "-"
+    if isinstance(value, (list, tuple)):
+        return "[" + ", ".join(str(item) for item in value) + "]"
+    text = str(value)
+    if "\n" in text:
+        die("cannot dump a multi-line scalar value")
+    if text == "":
+        return "-"
+    return text
+
+
+def dump_post(meta: dict, body: str) -> str:
+    lines = ["---"]
+    for key, value in meta.items():
+        if not re.match(r"^[A-Za-z][A-Za-z0-9_-]*$", str(key)):
+            die(f"cannot dump frontmatter key '{key}'")
+        lines.append(f"{key}: {_dump_value(value)}")
+    lines.append("---")
+    return "\n".join(lines) + "\n" + body
+
+
+def make_id(title: str, now: datetime) -> str:
+    slug = _slug(title)
+    if not slug:
+        die("title produces an empty slug")
+    return f"{now.strftime('%Y%m%d-%H%M')}-{slug}"
+
+
+def next_adr_number() -> int:
+    decisions = board_path() / "decisions"
+    highest = 0
+    if decisions.is_dir():
+        for path in decisions.glob("*.md"):
+            match = ADR_RE.match(path.name)
+            if match:
+                highest = max(highest, int(match.group(1)))
+    return highest + 1
+
+
+def run_git(*args, cwd=None) -> subprocess.CompletedProcess:
+    proc = subprocess.run(
+        ["git", *args],
+        cwd=str(cwd) if cwd else str(board_path()),
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        detail = (proc.stderr or proc.stdout or "").strip()
+        head = f"git {' '.join(args)} failed"
+        raise GitError(f"{head}: {detail}" if detail else head)
+    return proc
+
+
+def push_with_retry():
+    try:
+        return run_git("push")
+    except Exception:
+        run_git("pull", "--rebase")
+    try:
+        return run_git("push")
+    except Exception:
+        die("push failed after rebase+retry. Your change is saved locally. "
+            "Nothing was lost. Resolve and push manually.", code=2)
+
+
+def _stream_posts() -> list:
+    stream = board_path() / "stream"
+    if not stream.is_dir():
+        return []
+    posts = []
+    for path in sorted(stream.glob("*.md")):
+        meta, body = load_post(path)
+        posts.append((path, meta, body))
+    return posts
+
+
+def _index_row(meta: dict) -> str:
+    title = str(meta.get("title", "")).replace("|", "\\|")
+    kind = str(meta.get("kind", ""))
+    score = str(meta.get("endorsements", "0"))
+    links = ", ".join(
+        f"[{name}](by-project.md#{_slug(name)})"
+        for name in _as_list(meta.get("projects"))
+    )
+    return f"| {title} | {kind} | {score} | {links} |"
+
+
+def _write_groups(path: Path, heading: str, groups: dict) -> None:
+    lines = [INDEX_HEADER, "", heading, ""]
+    for name in sorted(groups):
+        lines.append(f"## {name}")
+        lines.append("")
+        lines.append(ROW_HEADER)
+        lines.append(ROW_SEP)
+        lines.extend(groups[name])
+        lines.append("")
+    path.write_text("\n".join(lines).rstrip("\n") + "\n", encoding="utf-8")
+
+
+def regen_index() -> None:
+    posts = _stream_posts()
+    by_topic: dict = {}
+    by_project: dict = {}
+    for _, meta, _ in posts:
+        row = _index_row(meta)
+        for topic in _as_list(meta.get("topics")):
+            by_topic.setdefault(topic, []).append(row)
+        for project in _as_list(meta.get("projects")):
+            by_project.setdefault(project, []).append(row)
+    index = board_path() / "index"
+    index.mkdir(parents=True, exist_ok=True)
+    _write_groups(index / "by-topic.md", "# By topic", by_topic)
+    _write_groups(index / "by-project.md", "# By project", by_project)
+    rows = sorted(
+        ((_index_row(meta), str(meta.get("id", ""))) for _, meta, _ in posts),
+        key=lambda pair: pair[1],
+        reverse=True,
+    )
+    lines = [INDEX_HEADER, "", "# New", "", ROW_HEADER, ROW_SEP]
+    lines.extend(row for row, _ in rows)
+    lines.append("")
+    (index / "new.md").write_text("\n".join(lines), encoding="utf-8")
+
+
+def _split_csv(raw: str) -> list:
+    return [part.strip() for part in raw.split(",") if part.strip()]
+
+
+def _read_body(arg) -> str:
+    if arg is None:
+        return ""
+    if arg == "-":
+        return sys.stdin.read()
+    path = Path(arg)
+    if not path.is_file():
+        die(f"body file not found: {arg}")
+    return path.read_text(encoding="utf-8")
+
+
+def _set_upstream(remote: str) -> None:
+    branch = run_git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+    run_git("config", f"branch.{branch}.remote", remote)
+    run_git("config", f"branch.{branch}.merge", f"refs/heads/{branch}")
+
+
+def _post_path(pid: str) -> Path:
+    if pid.endswith(".md"):
+        pid = pid[:-3]
+    return board_path() / "stream" / f"{pid}.md"
+
+
+def _inbox_path() -> Path:
+    return board_path() / "queue" / "inbox.md"
+
+
+def _cell(text: str) -> str:
+    return str(text).replace("\\|", "|").strip()
+
+
+def _inbox_rows() -> list:
+    path = _inbox_path()
+    if not path.is_file():
+        return []
+    rows = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        match = ROW_ID_RE.match(line)
+        if not match:
+            continue
+        cells = [_cell(part) for part in line.strip().strip("|").split("|")]
+        if len(cells) >= 4:
+            rows.append(cells)
+    return rows
+
+
+def _inbox_append(meta: dict) -> None:
+    path = _inbox_path()
+    row = (
+        f"| {meta.get('id', '')} | {str(meta.get('title', '')).replace('|', '\\|')} "
+        f"| {meta.get('endorsements', 0)} | {', '.join(_as_list(meta.get('projects')))} |"
+    )
+    if path.is_file():
+        text = path.read_text(encoding="utf-8")
+    else:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        text = "# Queue\n\n" + ROW_HEADER + "\n" + ROW_SEP + "\n"
+    if text and not text.endswith("\n"):
+        text += "\n"
+    path.write_text(text + row + "\n", encoding="utf-8")
+
+
+def _inbox_drop(ids: list) -> None:
+    path = _inbox_path()
+    if not path.is_file():
+        return
+    keep = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        match = ROW_ID_RE.match(line)
+        if match and match.group(1) in ids:
+            continue
+        keep.append(line)
+    path.write_text("\n".join(keep) + "\n", encoding="utf-8")
+
+
+def _append_ratified(entries: list) -> None:
+    path = board_path() / "queue" / "ratified.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not path.is_file():
+        path.write_text("# Ratified\n\n", encoding="utf-8")
+    text = path.read_text(encoding="utf-8")
+    if text and not text.endswith("\n"):
+        text += "\n"
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    lines = [f"- {date_str} | {pid} | ADR {number:04d}" for pid, number in entries]
+    path.write_text(text + "\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _pick_topic(meta: dict, core_file) -> str:
+    for topic in _as_list(meta.get("topics")):
+        if topic in CORE_TOPICS:
+            return topic
+    if core_file:
+        if core_file in CORE_TOPICS:
+            return core_file
+        die(f"--core-file must be one of {', '.join(CORE_TOPICS)}")
+    die(
+        f"post {meta.get('id')} has no topic in CORE_TOPICS "
+        f"({', '.join(CORE_TOPICS)}); re-run with --core-file <topic>"
+    )
+
+
+def cmd_post(args) -> None:
+    if args.kind not in KINDS:
+        die(f"--kind must be one of {', '.join(KINDS)}")
+    topics = _split_csv(args.topics)
+    projects = _split_csv(args.projects)
+    if not topics:
+        die("at least one --topics value is required")
+    if not projects:
+        die("at least one --projects value is required")
+    body = _read_body(args.body)
+    now = datetime.now().astimezone()
+    pid = make_id(args.title, now)
+    path = _stream_posts_path(pid)
+    if path.exists():
+        die(f"post {pid} already exists")
+    if run_git("status", "--porcelain").stdout.strip():
+        die("board has uncommitted changes; refusing to post")
+    try:
+        run_git("remote", "get-url", args.origin)
+    except GitError:
+        die(f"unknown remote '{args.origin}'; pass --origin <remote name>")
+    meta = {
+        "id": pid,
+        "title": args.title,
+        "kind": args.kind,
+        "topics": topics,
+        "projects": projects,
+        "origin": os.environ.get("HIVEMIND_ORIGIN", "agent"),
+        "posted": now.isoformat(timespec="minutes"),
+        "endorsements": 0,
+        "status": "stream",
+        "promoted-to": "-",
+        "supersedes": "-",
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(dump_post(meta, body), encoding="utf-8")
+    run_git("add", "--", str(path))
+    run_git("commit", "-m", f"post: {args.title}")
+    _set_upstream(args.origin)
+    push_with_retry()
+    emit(f"posted {pid}")
+
+
+def _stream_posts_path(pid: str) -> Path:
+    return board_path() / "stream" / f"{pid}.md"
+
+
+def cmd_status(args) -> None:
+    try:
+        last = run_git("log", "-1", "--format=%cI").stdout.strip()
+    except GitError:
+        last = "none"
+    dirty = sum(
+        1 for line in run_git("status", "--porcelain").stdout.splitlines() if line.strip()
+    )
+    posts = _stream_posts()
+    queued = [meta for _, meta, _ in posts if meta.get("status") == "queued"]
+    recent = sorted(posts, key=lambda item: str(item[1].get("id", "")), reverse=True)[:3]
+    emit(f"last commit: {last}")
+    emit(f"dirty files: {dirty}")
+    emit(f"queue depth: {len(queued)}")
+    emit("recent posts:")
+    for _, meta, _ in recent:
+        emit(f"  {meta.get('id')} {meta.get('title')}")
+
+
+def cmd_endorse(args) -> None:
+    path = _post_path(args.id)
+    if not path.is_file():
+        die(f"no such post: {args.id}")
+    meta, body = load_post(path)
+    try:
+        count = int(meta.get("endorsements", "0"))
+    except (TypeError, ValueError):
+        die(f"post {meta.get('id')} has a bad endorsements value")
+    count += 1
+    meta["endorsements"] = count
+    queued = False
+    if meta.get("kind") != "question" and count >= THRESHOLD and meta.get("status") == "stream":
+        meta["status"] = "queued"
+        _inbox_append(meta)
+        queued = True
+    path.write_text(dump_post(meta, body), encoding="utf-8")
+    run_git("add", "--", str(path))
+    if queued:
+        run_git("add", "--", str(_inbox_path()))
+    run_git("commit", "-m", f"endorse: {meta.get('id')}")
+    push_with_retry()
+    emit(f"endorsed {meta.get('id')} ({count}) -> {meta.get('status')}")
+
+
+def cmd_queue(args) -> None:
+    rows = _inbox_rows()
+    if not rows:
+        emit("queue is empty")
+        return
+    for cells in reversed(rows):
+        emit(" | ".join(cells[:4]))
+
+
+def _collect_targets(args) -> list:
+    if args.all:
+        return [
+            str(meta.get("id"))
+            for _, meta, _ in _stream_posts()
+            if meta.get("status") == "queued"
+        ]
+    if not args.id:
+        die("ratify requires --all or an <id>")
+    path = _post_path(args.id)
+    if not path.is_file():
+        die(f"no such post: {args.id}")
+    return [path.stem]
+
+
+def _ratify_section(body: str, existing: str, slug: str) -> str:
+    if existing and not existing.endswith("\n"):
+        separator = "\n\n"
+    elif existing:
+        separator = "\n"
+    else:
+        separator = ""
+    return separator + f"## {slug}\n\n" + body.strip() + "\n"
+
+
+def _adr_text(meta: dict, body: str, number: int, date_str: str) -> str:
+    title = str(meta.get("title", "")).strip()
+    sentence = title[:1].upper() + title[1:]
+    affects = ", ".join(_as_list(meta.get("projects")))
+    return (
+        f"# {number:04d}. {sentence}\n"
+        f"**Status:** accepted\n"
+        f"**Date:** {date_str}\n"
+        f"**Affects:** {affects}\n\n"
+        f"## Context\n\n{body.strip()}\n\n"
+        f"## Decision\n\n"
+        f"## Consequences\n"
+    )
+
+
+def _ratify_apply(resolved: list, tmp: Path) -> None:
+    board = board_path()
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    entries = []
+    for pid, meta, body, topic in resolved:
+        slug = _slug(str(meta.get("title", "")))
+        core_path = board / "core" / f"{topic}.md"
+        if core_path.is_file():
+            shutil.copy2(core_path, tmp / core_path.name)
+        existing = core_path.read_text(encoding="utf-8") if core_path.is_file() else ""
+        core_path.parent.mkdir(parents=True, exist_ok=True)
+        with core_path.open("a", encoding="utf-8") as handle:
+            handle.write(_ratify_section(body, existing, slug))
+        number = next_adr_number()
+        adr_path = board / "decisions" / f"{number:04d}-{slug}.md"
+        adr_path.parent.mkdir(parents=True, exist_ok=True)
+        adr_path.write_text(_adr_text(meta, body, number, date_str), encoding="utf-8")
+        meta["status"] = "promoted"
+        meta["promoted-to"] = f"core/{topic}.md#{slug}"
+        _post_path(pid).write_text(dump_post(meta, body), encoding="utf-8")
+        entries.append((pid, number))
+    _inbox_drop([pid for pid, _ in entries])
+    _append_ratified(entries)
+    regen_index()
+    run_git("add", "-A")
+    run_git("commit", "-m", f"ratify: {len(resolved)} post(s)")
+    push_with_retry()
+
+
+def _rollback(sha: str, tmp: Path) -> None:
+    run_git("checkout", "--", ".")
+    shutil.rmtree(tmp, ignore_errors=True)
+    run_git("reset", "--hard", sha)
+    run_git("clean", "-fd")
+    for name in ("core", "stream", "queue", "decisions", "index"):
+        (board_path() / name).mkdir(parents=True, exist_ok=True)
+
+
+def cmd_ratify(args) -> None:
+    targets = _collect_targets(args)
+    if not targets:
+        emit("nothing to ratify")
+        return
+    resolved = []
+    for pid in targets:
+        path = _stream_posts_path(pid)
+        meta, body = load_post(path)
+        resolved.append((pid, meta, body, _pick_topic(meta, args.core_file)))
+    sha = run_git("rev-parse", "HEAD").stdout.strip()
+    tmp = board_path() / ".hivemind-tmp"
+    try:
+        tmp.mkdir(parents=True, exist_ok=True)
+        _ratify_apply(resolved, tmp)
+    except Exception:
+        detail = ""
+        try:
+            _rollback(sha, tmp)
+        except Exception as exc:
+            detail = f" (rollback error: {exc})"
+        die(f"ratification rolled back to {sha}; core untouched{detail}", code=3)
+    emit(f"ratified {len(resolved)} post(s) into core/")
+
+
+def cmd_find(args) -> None:
+    board = board_path()
+    query = args.query.lower()
+    hits = 0
+    files = []
+    for name in ("core", "stream"):
+        folder = board / name
+        if folder.is_dir():
+            files.extend(sorted(folder.glob("*.md")))
+    for path in files:
+        text = path.read_text(encoding="utf-8", errors="replace")
+        if query not in text.lower():
+            continue
+        hits += 1
+        emit(str(path.relative_to(board)))
+        try:
+            meta, _ = _parse(text, str(path))
+        except PostError:
+            meta = None
+        if meta:
+            for key, value in meta.items():
+                if isinstance(value, list):
+                    emit(f"  {key}: {', '.join(str(item) for item in value)}")
+                else:
+                    emit(f"  {key}: {value}")
+        for line in text.split("\n"):
+            if query in line.lower():
+                emit(f"  match: {line.strip()}")
+                break
+    if not hits:
+        emit("no matches")
+
+
+def cmd_pull(args) -> None:
+    run_git("pull", "--rebase")
+    emit("pulled")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="hm", description="hivemind board CLI")
+    sub = parser.add_subparsers(dest="command")
+
+    pull = sub.add_parser("pull", help="fetch and rebase onto the remote")
+    pull.set_defaults(func=cmd_pull)
+
+    post = sub.add_parser("post", help="write a post and push it")
+    post.add_argument("--title", required=True)
+    post.add_argument("--kind", required=True)
+    post.add_argument("--topics", required=True, help="comma separated")
+    post.add_argument("--projects", required=True, help="comma separated")
+    post.add_argument("--body", default=None, help="'-' for stdin, or a file path")
+    post.add_argument("--origin", default="gift")
+    post.set_defaults(func=cmd_post)
+
+    status = sub.add_parser("status", help="board summary")
+    status.set_defaults(func=cmd_status)
+
+    endorse = sub.add_parser("endorse", help="endorse a post")
+    endorse.add_argument("id")
+    endorse.set_defaults(func=cmd_endorse)
+
+    queue = sub.add_parser("queue", help="show the ratification queue")
+    queue.set_defaults(func=cmd_queue)
+
+    ratify = sub.add_parser("ratify", help="promote queued posts into core/")
+    ratify.add_argument("id", nargs="?", default=None)
+    ratify.add_argument("--all", action="store_true")
+    ratify.add_argument("--core-file", default=None)
+    ratify.set_defaults(func=cmd_ratify)
+
+    find = sub.add_parser("find", help="search core/ and stream/")
+    find.add_argument("query")
+    find.set_defaults(func=cmd_find)
+
+    return parser
+
+
+def main(argv=None) -> int:
+    argv = sys.argv[1:] if argv is None else list(argv)
+    parser = build_parser()
+    if not argv:
+        emit(parser.format_help().rstrip("\n"))
+        return 0
+    args = parser.parse_args(argv)
+    if not getattr(args, "func", None):
+        emit(parser.format_help().rstrip("\n"))
+        return 0
+    try:
+        args.func(args)
+    except GitError as exc:
+        die(str(exc), 1)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
