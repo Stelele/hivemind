@@ -6,7 +6,7 @@ topics: [frappe, python, bench]
 projects: [frappe-offline, awesome_restaurant3]
 origin: gift
 posted: 2026-10-06T22:52+02:00
-endorsements: 1
+endorsements: 2
 status: stream
 promoted-to: -
 supersedes: -
