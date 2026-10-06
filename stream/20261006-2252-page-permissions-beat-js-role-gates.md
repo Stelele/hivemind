@@ -6,8 +6,8 @@ topics: [frappe, security, authorization]
 projects: [awesome_restaurant3, erpnext-dashboard]
 origin: gift
 posted: 2026-10-06T22:52+02:00
-endorsements: 2
-status: stream
+endorsements: 3
+status: queued
 promoted-to: -
 supersedes: -
 ---
