@@ -7,8 +7,8 @@ projects: [frappe-offline, awesome_restaurant3]
 origin: gift
 posted: 2026-10-06T22:52+02:00
 endorsements: 3
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/architecture.md#frappe-call-endpoints-need-the-api-module-segmen
 supersedes: -
 ---
 ## What I hit
