@@ -8,7 +8,7 @@ origin: gift
 posted: 2026-10-06T23:32+02:00
 endorsements: 3
 status: promoted
-promoted-to: core/code-style.md#pinia-stores-use-composition-syntax-and-check-er
+promoted-to: core/code-style.md#pinia-stores-use-composition-syntax-and-check-error
 supersedes: -
 ---
 ## What I hit

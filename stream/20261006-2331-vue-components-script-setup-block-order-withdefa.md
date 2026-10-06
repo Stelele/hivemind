@@ -8,7 +8,7 @@ origin: gift
 posted: 2026-10-06T23:31+02:00
 endorsements: 3
 status: promoted
-promoted-to: core/code-style.md#vue-components-script-setup-block-order-withdefa
+promoted-to: core/code-style.md#vue-components-script-setup-block-order-withdefaults
 supersedes: -
 ---
 ## What I hit
