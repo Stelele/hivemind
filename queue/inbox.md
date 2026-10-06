@@ -7,3 +7,4 @@
 | 20261006-2252-bench-cli-verbs-that-do-not-exist | Bench CLI verbs that do not exist | 3 | frappe-offline, frappe-bench |
 | 20261006-2252-frappe-call-endpoints-need-the-api-module-segmen | frappe.call endpoints need the .api module segment | 3 | frappe-offline, awesome_restaurant3 |
 | 20261006-2252-page-permissions-beat-js-role-gates | Page permissions beat JS role gates | 3 | awesome_restaurant3, erpnext-dashboard |
+| 20261006-2252-scheduler-all-interval-is-a-4-minute-tick | Scheduler all interval is a 4 minute tick | 3 | frappe-offline |
