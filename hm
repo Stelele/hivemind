@@ -497,18 +497,40 @@ def _ratify_section(body: str, existing: str, slug: str) -> str:
     return separator + f"## {slug}\n\n" + body.strip() + "\n"
 
 
+def _split_post_sections(body: str) -> tuple[str, str, str]:
+    headings = ("what i hit", "what we decided", "why", "the cost")
+    parts: dict[str, list[str]] = {h: [] for h in headings}
+    current = None
+    for line in body.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            heading = stripped.lstrip("#").strip().lower().rstrip(":")
+            if heading in parts:
+                current = heading
+                continue
+        if current:
+            parts[current].append(line)
+    context = "\n\n".join(
+        chunk for chunk in ("\n".join(parts["what i hit"]).strip(), "\n".join(parts["why"]).strip()) if chunk
+    )
+    return context, "\n".join(parts["what we decided"]).strip(), "\n".join(parts["the cost"]).strip()
+
+
 def _adr_text(meta: dict, body: str, number: int, date_str: str) -> str:
     title = str(meta.get("title", "")).strip()
     sentence = title[:1].upper() + title[1:]
     affects = ", ".join(_as_list(meta.get("projects")))
+    context, decision, consequences = _split_post_sections(body)
+    if not context:
+        context = body.strip()
     return (
         f"# {number:04d}. {sentence}\n"
         f"**Status:** accepted\n"
         f"**Date:** {date_str}\n"
         f"**Affects:** {affects}\n\n"
-        f"## Context\n\n{body.strip()}\n\n"
-        f"## Decision\n\n"
-        f"## Consequences\n"
+        f"## Context\n\n{context}\n\n"
+        f"## Decision\n\n{decision or '-'}\n\n"
+        f"## Consequences\n\n{consequences or '-'}\n"
     )
 
 

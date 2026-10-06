@@ -359,3 +359,32 @@ class HmTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AdrSectionMappingTest(HmTestCase):
+    def test_post_sections_map_into_adr(self):
+        body = (
+            "## What I hit\n\nThe thing broke.\n\n"
+            "## What we decided\n\nDo the other thing.\n\n"
+            "## Why\n\nBecause of reasons.\n\n"
+            "## The cost\n\nYou give up speed.\n"
+        )
+        context, decision, consequences = hm._split_post_sections(body)
+        self.assertIn("The thing broke.", context)
+        self.assertIn("Because of reasons.", context)
+        self.assertEqual(decision.strip(), "Do the other thing.")
+        self.assertEqual(consequences.strip(), "You give up speed.")
+
+    def test_post_sections_tolerate_missing_headings(self):
+        context, decision, consequences = hm._split_post_sections("just prose, no headings")
+        self.assertEqual(decision, "")
+        self.assertEqual(consequences, "")
+        self.assertEqual(context, "")
+
+    def test_adr_text_has_no_empty_sections(self):
+        meta = {"title": "A rule", "projects": "x, y"}
+        body = "## What I hit\n\nA\n\n## What we decided\n\nB\n\n## The cost\n\nC\n"
+        text = hm._adr_text(meta, body, 9, "2026-10-06")
+        for section in ("## Context", "## Decision", "## Consequences"):
+            tail = text.split(section, 1)[1].lstrip("\n").strip()
+            self.assertNotEqual(tail, "", f"{section} is empty")
