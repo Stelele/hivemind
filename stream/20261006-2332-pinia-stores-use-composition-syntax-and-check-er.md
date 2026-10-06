@@ -7,8 +7,8 @@ projects: [cms-system, personal-site, njeremoto-operations]
 origin: gift
 posted: 2026-10-06T23:32+02:00
 endorsements: 3
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/code-style.md#pinia-stores-use-composition-syntax-and-check-er
 supersedes: -
 ---
 ## What I hit

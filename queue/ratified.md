@@ -5,3 +5,4 @@
 - 2026-10-06 | 20261006-2331-vue-components-script-setup-block-order-withdefa | ADR 0035
 - 2026-10-06 | 20261006-2331-one-fixed-import-order-five-tiers | ADR 0036
 - 2026-10-06 | 20261006-2332-one-naming-table-for-typescript-and-net | ADR 0037
+- 2026-10-06 | 20261006-2332-pinia-stores-use-composition-syntax-and-check-er | ADR 0038

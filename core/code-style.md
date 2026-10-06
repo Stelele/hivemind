@@ -195,3 +195,41 @@ kind of thing that only surfaces when someone writes a new store from memory.
 
 Renaming to match the table creates churn in files that were already correct under the
 other convention.
+
+## pinia-stores-use-composition-syntax-and-check-er
+
+## What I hit
+
+Store conventions existed in two repos with different registration styles.
+
+## What we decided
+
+Pinia stores use the composition (function) syntax, one responsibility each, exposed
+through a `use…Store` function.
+
+```typescript
+export const useBlogStore = defineStore('blogStore', () => {
+  const blogs = ref<BlogResponse[]>([])
+
+  async function update() {
+    const client = await BackendApiSingleton.getInstance()
+    const { data, error } = await client.GET('/blogs')
+    if (error) return
+    blogs.value = data ?? []
+  }
+
+  return { blogs, update }
+})
+```
+
+- `ref()` not `reactive()` inside stores — consistent unwrapping.
+- Handles the error case; never destructure `data` without checking `error`.
+
+## Why
+
+Function-syntax stores read the same as the components that consume them, and the
+`{ data, error }` shape from openapi-fetch forces the error branch to be visible.
+
+## The cost
+
+A little ceremony per store, and option-style stores will not match.
