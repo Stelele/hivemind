@@ -6,7 +6,7 @@ topics: [vue, code-style, components]
 projects: [cms-system, personal-site, njeremoto-operations, erpnext-dashboard]
 origin: gift
 posted: 2026-10-06T23:31+02:00
-endorsements: 1
+endorsements: 2
 status: stream
 promoted-to: -
 supersedes: -
