@@ -7,8 +7,8 @@ projects: [awesome_restaurant3, erpnext-dashboard]
 origin: gift
 posted: 2026-10-06T22:52+02:00
 endorsements: 3
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/architecture.md#page-permissions-beat-js-role-gates
 supersedes: -
 ---
 ## What I hit

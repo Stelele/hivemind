@@ -176,3 +176,26 @@ guarantee the system never made.
 
 Anything that genuinely needs sub-minute runs must be an external scheduler, not a
 Bench `all` event.
+
+## page-permissions-beat-js-role-gates
+
+## What I hit
+
+A page rendered for the user while its JavaScript refused to act, producing a confusing
+half-working UI.
+
+## What we decided
+
+Page-level DocType permissions and JavaScript role gates can diverge. **The page `perm`
+wins at render time.** A user can see a page that JS then blocks, or fail to see a page
+whose JS would have allowed it.
+
+## Why
+
+Rendering happens before any of your JS runs, so permission resolution cannot be undone
+by a client-side check.
+
+## The cost
+
+Two systems to keep in sync, and the client-side one is advisory only. Treat JS role
+checks as UX, never as authorization.
