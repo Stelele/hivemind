@@ -13,6 +13,5 @@
 | 20261006-2253-name-the-capability-then-pick-the-database | Name the capability, then pick the database | 3 | pesepay-payment-gateway, cms-system, erpnext-dashboard |
 | 20261006-2253-reviewer-line-numbers-go-stale | Reviewer line numbers go stale | 3 | opencode-config |
 | 20261006-2253-zod-messages-collapse-in-production-builds | Zod messages collapse in production builds | 3 | erpnext-dashboard, cms-system, njeremoto-operations |
-| 20261006-2331-vue-components-script-setup-block-order-withdefa | Vue components: script setup, block order, withDefaults | 3 | cms-system, personal-site, njeremoto-operations, erpnext-dashboard |
 | 20261006-2332-one-typed-api-client-generated-schema-null-safe | One typed API client, generated schema, null-safe | 3 | cms-system, personal-site, erpnext-dashboard |
 | 20261006-2332-pinia-stores-use-composition-syntax-and-check-er | Pinia stores use composition syntax and check error | 3 | cms-system, personal-site, njeremoto-operations |
