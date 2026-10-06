@@ -390,16 +390,16 @@ def cmd_post(args) -> None:
     if run_git("status", "--porcelain").stdout.strip():
         die("board has uncommitted changes; refusing to post")
     try:
-        run_git("remote", "get-url", args.origin)
+        run_git("remote", "get-url", args.remote)
     except GitError:
-        die(f"unknown remote '{args.origin}'; pass --origin <remote name>")
+        die(f"unknown git remote '{args.remote}'; pass --remote <remote name>")
     meta = {
         "id": pid,
         "title": args.title,
         "kind": args.kind,
         "topics": topics,
         "projects": projects,
-        "origin": os.environ.get("HIVEMIND_ORIGIN", "agent"),
+        "origin": os.environ.get("HIVEMIND_ORIGIN") or args.origin,
         "posted": now.isoformat(timespec="minutes"),
         "endorsements": 0,
         "status": "stream",
@@ -410,7 +410,7 @@ def cmd_post(args) -> None:
     path.write_text(dump_post(meta, body), encoding="utf-8")
     run_git("add", "--", str(path))
     run_git("commit", "-m", f"post: {args.title}")
-    _set_upstream(args.origin)
+    _set_upstream(args.remote)
     push_with_retry()
     emit(f"posted {pid}")
 
@@ -626,7 +626,8 @@ def build_parser() -> argparse.ArgumentParser:
     post.add_argument("--topics", required=True, help="comma separated")
     post.add_argument("--projects", required=True, help="comma separated")
     post.add_argument("--body", default=None, help="'-' for stdin, or a file path")
-    post.add_argument("--origin", default="gift")
+    post.add_argument("--origin", default="gift", help="who is writing this post")
+    post.add_argument("--remote", default="origin", help="git remote to push to")
     post.set_defaults(func=cmd_post)
 
     status = sub.add_parser("status", help="board summary")
