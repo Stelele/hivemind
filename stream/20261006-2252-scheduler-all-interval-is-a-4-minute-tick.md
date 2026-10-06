@@ -7,8 +7,8 @@ projects: [frappe-offline]
 origin: gift
 posted: 2026-10-06T22:52+02:00
 endorsements: 3
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/architecture.md#scheduler-all-interval-is-a-4-minute-tick
 supersedes: -
 ---
 ## What I hit
