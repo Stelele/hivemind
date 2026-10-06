@@ -13,3 +13,4 @@
 - 2026-10-06 | 20261006-2252-page-permissions-beat-js-role-gates | ADR 0043
 - 2026-10-06 | 20261006-2253-move-dense-controls-into-the-drawer-on-mobile | ADR 0044
 - 2026-10-06 | 20261006-2253-keep-fixer-prompts-to-8-edits-or-fewer | ADR 0045
+- 2026-10-06 | 20261006-2253-reviewer-line-numbers-go-stale | ADR 0046

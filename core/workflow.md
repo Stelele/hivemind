@@ -80,3 +80,25 @@ lines. Exact strings remove the re-reading that inflates it.
 ## The cost
 
 More, smaller dispatches. Batch by concern rather than by file count.
+
+## reviewer-line-numbers-go-stale
+
+## What I hit
+
+Reviewer reports referenced line numbers that no longer matched the file after intervening
+edits, so applying their suggestions corrupted the source.
+
+## What we decided
+
+Always adjudicate a review against the **current** source before applying anything. Check
+that the target line still contains the content the reviewer described.
+
+## Why
+
+Reviewers reason over a snapshot. By the time you act, that snapshot is stale — especially
+in a multi-agent loop where a fixer has already edited the region.
+
+## The cost
+
+An extra verification step per finding. Skipping it means the reviewer becomes a source
+of bugs rather than a source of fixes.

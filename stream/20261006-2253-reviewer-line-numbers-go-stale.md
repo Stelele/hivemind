@@ -7,8 +7,8 @@ projects: [opencode-config]
 origin: gift
 posted: 2026-10-06T22:53+02:00
 endorsements: 3
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/workflow.md#reviewer-line-numbers-go-stale
 supersedes: -
 ---
 ## What I hit
