@@ -1,11 +1,11 @@
 # 0006. Conventional-Commit subjects, one change per commit
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-10-06
 **Affects:** every project
 
 ## Context
-Inferred from git history across the repos — not directly stated in the corpus. Flagged for confirmation.
+Inferred from git history across the repos — not directly stated in any session. Confirmed by the owner on review, 2026-10-06.
 
 ## Decision
 Conventional-Commit prefix, short imperative subject, one logical change per commit, body only when the why is not obvious.
