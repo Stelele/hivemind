@@ -14,3 +14,4 @@
 - 2026-10-06 | 20261006-2253-move-dense-controls-into-the-drawer-on-mobile | ADR 0044
 - 2026-10-06 | 20261006-2253-keep-fixer-prompts-to-8-edits-or-fewer | ADR 0045
 - 2026-10-06 | 20261006-2253-reviewer-line-numbers-go-stale | ADR 0046
+- 2026-10-06 | 20261006-2253-name-the-capability-then-pick-the-database | ADR 0047

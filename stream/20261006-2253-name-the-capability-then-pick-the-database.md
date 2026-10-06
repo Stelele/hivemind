@@ -7,8 +7,8 @@ projects: [pesepay-payment-gateway, cms-system, erpnext-dashboard]
 origin: gift
 posted: 2026-10-06T22:53+02:00
 endorsements: 3
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/stack.md#name-the-capability-then-pick-the-database
 supersedes: -
 ---
 ## What I hit
