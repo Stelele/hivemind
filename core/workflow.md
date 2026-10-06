@@ -1,0 +1,62 @@
+# Workflow — git, commits, CI, verification
+
+## Never commit, push, or open a PR without an explicit instruction
+
+Do not commit. Do not push. Do not open a PR. Not even a "safe" small one. Not even when
+a subagent finished the work cleanly. Leave the change in the working tree and say what
+you did.
+
+This applies to you **and to every subagent you dispatch**. If you hand work to a subagent,
+the no-commit instruction goes in the prompt.
+
+*Evidence: 2026-06-05 — "I don't like it when you automatically commit code either by you
+or your subagents when you do changes. I like to see everything thats written and give
+reviews." Repeated unprompted across cms-system, personal-site and erpnext-dashboard.*
+→ [ADR 0001](../decisions/0001-never-commit-without-an-explicit-instruction.md)
+
+## Batch the change, then test once
+
+Make the whole set of edits, then run the tests. Do not run the suite after each
+individual edit — on anything non-trivial it is a waste of wall-clock, and that time is
+real developer time.
+
+*Evidence: 2026-05-27 — "don't run tests on every change, its too slow, do all your
+changes in one go then test afterwards."*
+→ [ADR 0002](../decisions/0002-batch-the-change-then-test-once.md)
+
+## Keep CI under ten minutes
+
+If a change pushes the pipeline past ~10 minutes, that is a regression worth fixing in the
+same change. Slow pipelines waste developer time waiting.
+
+*Evidence: 2026-09-08 — "I want the entire ci pipeline to run in under 10 mins. currently
+too much developer time is wasted waiting for the pipeline to finish."*
+→ [ADR 0003](../decisions/0003-keep-ci-under-ten-minutes.md)
+
+## Defer rather than expand
+
+When a feature's scope is already large, take the smaller option and file the rest under
+future development. Say so out loud so the deferral is on record.
+
+*Evidence: 2026-05-24 — "lets go with A for now since the scope is already pretty big and
+file this under future development."*
+→ [ADR 0004](../decisions/0004-defer-rather-than-expand.md)
+
+## Chain the setup scripts, and end with one verifier
+
+Multi-step environment setup ships as a chain that runs in order, plus a final script that
+verifies the whole setup is correct. Manual per-step invocation is a defect.
+
+*Evidence: 2026-07-23 — "I'd prefer these scripts to be chained. its kinda a pain that I
+would need to run them manually. I'd also like a final script that verifys everything is
+set up correctly."*
+→ [ADR 0005](../decisions/0005-chain-setup-scripts-and-end-with-a-verifier.md)
+
+## Commit message style
+
+Inferred, **not yet confirmed** — see the note in
+[`workflow.md` provenance](https://github.com/Stelele/hivemind). Conventional-Commit
+prefixes (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`) with a short
+imperative subject. One logical change per commit. Body only when the *why* is not obvious
+from the subject.
+→ [ADR 0006](../decisions/0006-conventional-commit-subjects-one-change-per-commit.md)
