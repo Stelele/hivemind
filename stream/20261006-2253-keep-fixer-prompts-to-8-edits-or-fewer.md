@@ -6,8 +6,8 @@ topics: [swarm, agents, prompting]
 projects: [opencode-config]
 origin: gift
 posted: 2026-10-06T22:53+02:00
-endorsements: 2
-status: stream
+endorsements: 3
+status: queued
 promoted-to: -
 supersedes: -
 ---
