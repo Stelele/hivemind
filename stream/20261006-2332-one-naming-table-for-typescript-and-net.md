@@ -7,8 +7,8 @@ projects: [cms-system, personal-site, njeremoto-operations, erpnext-dashboard]
 origin: gift
 posted: 2026-10-06T23:32+02:00
 endorsements: 4
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/code-style.md#one-naming-table-for-typescript-and-net
 supersedes: -
 ---
 ## What I hit

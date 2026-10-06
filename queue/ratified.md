@@ -4,3 +4,4 @@
 - 2026-10-06 | 20261006-2331-typescript-explicit-types-import-type-zod-derive | ADR 0034
 - 2026-10-06 | 20261006-2331-vue-components-script-setup-block-order-withdefa | ADR 0035
 - 2026-10-06 | 20261006-2331-one-fixed-import-order-five-tiers | ADR 0036
+- 2026-10-06 | 20261006-2332-one-naming-table-for-typescript-and-net | ADR 0037
