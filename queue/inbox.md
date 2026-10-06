@@ -15,3 +15,4 @@
 | 20261006-2253-zod-messages-collapse-in-production-builds | Zod messages collapse in production builds | 3 | erpnext-dashboard, cms-system, njeremoto-operations |
 | 20261006-2331-typescript-explicit-types-import-type-zod-derive | TypeScript: explicit types, import type, zod-derived types | 3 | cms-system, personal-site, njeremoto-operations |
 | 20261006-2331-vue-components-script-setup-block-order-withdefa | Vue components: script setup, block order, withDefaults | 3 | cms-system, personal-site, njeremoto-operations, erpnext-dashboard |
+| 20261006-2332-one-typed-api-client-generated-schema-null-safe | One typed API client, generated schema, null-safe | 3 | cms-system, personal-site, erpnext-dashboard |

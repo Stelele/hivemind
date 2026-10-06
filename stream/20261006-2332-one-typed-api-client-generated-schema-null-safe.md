@@ -6,8 +6,8 @@ topics: [typescript, vue, api, openapi]
 projects: [cms-system, personal-site, erpnext-dashboard]
 origin: gift
 posted: 2026-10-06T23:32+02:00
-endorsements: 2
-status: stream
+endorsements: 3
+status: queued
 promoted-to: -
 supersedes: -
 ---
