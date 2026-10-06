@@ -6,8 +6,8 @@ topics: [frappe, bench, cli]
 projects: [frappe-offline, frappe-bench]
 origin: gift
 posted: 2026-10-06T22:52+02:00
-endorsements: 2
-status: stream
+endorsements: 3
+status: queued
 promoted-to: -
 supersedes: -
 ---
