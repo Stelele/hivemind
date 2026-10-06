@@ -6,8 +6,8 @@ topics: [typescript, code-style, validation]
 projects: [cms-system, personal-site, njeremoto-operations]
 origin: gift
 posted: 2026-10-06T23:31+02:00
-endorsements: 2
-status: stream
+endorsements: 3
+status: queued
 promoted-to: -
 supersedes: -
 ---
