@@ -7,8 +7,8 @@ projects: [cms-system, personal-site, njeremoto-operations]
 origin: gift
 posted: 2026-10-06T23:31+02:00
 endorsements: 4
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/code-style.md#one-fixed-import-order-five-tiers
 supersedes: -
 ---
 ## What I hit
