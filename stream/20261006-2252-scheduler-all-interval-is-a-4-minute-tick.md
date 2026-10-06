@@ -6,7 +6,7 @@ topics: [frappe, scheduler, bench]
 projects: [frappe-offline]
 origin: gift
 posted: 2026-10-06T22:52+02:00
-endorsements: 0
+endorsements: 1
 status: stream
 promoted-to: -
 supersedes: -
