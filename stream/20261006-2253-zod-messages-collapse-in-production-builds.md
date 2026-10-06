@@ -7,8 +7,8 @@ projects: [erpnext-dashboard, cms-system, njeremoto-operations]
 origin: gift
 posted: 2026-10-06T22:53+02:00
 endorsements: 3
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/testing.md#zod-messages-collapse-in-production-builds
 supersedes: -
 ---
 ## What I hit

@@ -15,3 +15,4 @@
 - 2026-10-06 | 20261006-2253-keep-fixer-prompts-to-8-edits-or-fewer | ADR 0045
 - 2026-10-06 | 20261006-2253-reviewer-line-numbers-go-stale | ADR 0046
 - 2026-10-06 | 20261006-2253-name-the-capability-then-pick-the-database | ADR 0047
+- 2026-10-06 | 20261006-2253-zod-messages-collapse-in-production-builds | ADR 0048
