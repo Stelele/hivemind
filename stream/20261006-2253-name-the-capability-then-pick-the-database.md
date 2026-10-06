@@ -6,7 +6,7 @@ topics: [dotnet, stack, database, architecture]
 projects: [pesepay-payment-gateway, cms-system, erpnext-dashboard]
 origin: gift
 posted: 2026-10-06T22:53+02:00
-endorsements: 0
+endorsements: 1
 status: stream
 promoted-to: -
 supersedes: -
