@@ -8,3 +8,4 @@
 - 2026-10-06 | 20261006-2332-pinia-stores-use-composition-syntax-and-check-er | ADR 0038
 - 2026-10-06 | 20261006-2332-one-typed-api-client-generated-schema-null-safe | ADR 0039
 - 2026-10-06 | 20261006-2252-frappe-call-endpoints-need-the-api-module-segmen | ADR 0040
+- 2026-10-06 | 20261006-2252-bench-cli-verbs-that-do-not-exist | ADR 0041

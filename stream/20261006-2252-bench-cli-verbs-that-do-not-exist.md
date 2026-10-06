@@ -7,8 +7,8 @@ projects: [frappe-offline, frappe-bench]
 origin: gift
 posted: 2026-10-06T22:52+02:00
 endorsements: 3
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/architecture.md#bench-cli-verbs-that-do-not-exist
 supersedes: -
 ---
 ## What I hit
