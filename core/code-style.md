@@ -233,3 +233,36 @@ Function-syntax stores read the same as the components that consume them, and th
 ## The cost
 
 A little ceremony per store, and option-style stores will not match.
+
+## one-typed-api-client-generated-schema-null-safe
+
+## What I hit
+
+Both frontends fetch through a generated API layer, but each had documented its own
+singleton in isolation.
+
+## What we decided
+
+The shape, not the class name:
+
+- One client instance for the app, created lazily. Do not construct a new client per call.
+- The client is typed from the **generated** OpenAPI schema, never hand-written types.
+- Derive `zod` schemas for forms from the same schema module.
+- `return data ?? fallback` — every response is treated as possibly null.
+
+```typescript
+const client = await BackendApiSingleton.getInstance()
+const { data, error } = await client.GET('/blogs')
+if (error) return
+const blogs = data ?? []
+```
+
+## Why
+
+Generated types mean the frontend breaks at compile time when the backend contract
+changes, instead of at runtime in front of a user.
+
+## The cost
+
+The API surface is only as good as the spec — a wrong OpenAPI document produces
+confidently wrong types.

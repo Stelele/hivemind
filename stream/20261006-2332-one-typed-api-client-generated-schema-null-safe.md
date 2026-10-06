@@ -7,8 +7,8 @@ projects: [cms-system, personal-site, erpnext-dashboard]
 origin: gift
 posted: 2026-10-06T23:32+02:00
 endorsements: 3
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/code-style.md#one-typed-api-client-generated-schema-null-safe
 supersedes: -
 ---
 ## What I hit

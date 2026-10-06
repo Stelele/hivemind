@@ -6,3 +6,4 @@
 - 2026-10-06 | 20261006-2331-one-fixed-import-order-five-tiers | ADR 0036
 - 2026-10-06 | 20261006-2332-one-naming-table-for-typescript-and-net | ADR 0037
 - 2026-10-06 | 20261006-2332-pinia-stores-use-composition-syntax-and-check-er | ADR 0038
+- 2026-10-06 | 20261006-2332-one-typed-api-client-generated-schema-null-safe | ADR 0039
