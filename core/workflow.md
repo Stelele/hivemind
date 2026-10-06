@@ -60,3 +60,23 @@ prefixes (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`) with a short
 imperative subject. One logical change per commit. Body only when the *why* is not obvious
 from the subject.
 → [ADR 0006](../decisions/0006-conventional-commit-subjects-one-change-per-commit.md)
+
+## keep-fixer-prompts-to-8-edits-or-fewer
+
+## What I hit
+
+Fixer agents were hitting step limits on batches of 10 or more edits.
+
+## What we decided
+
+Keep fixer prompts to **8 edits or fewer**, and quote the exact string to replace. Longer
+batches exhaust the agent's step budget mid-fix.
+
+## Why
+
+Step budget scales with the number of distinct decisions in the prompt, not the number of
+lines. Exact strings remove the re-reading that inflates it.
+
+## The cost
+
+More, smaller dispatches. Batch by concern rather than by file count.

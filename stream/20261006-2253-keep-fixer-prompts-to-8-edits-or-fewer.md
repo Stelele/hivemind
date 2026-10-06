@@ -7,8 +7,8 @@ projects: [opencode-config]
 origin: gift
 posted: 2026-10-06T22:53+02:00
 endorsements: 3
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/workflow.md#keep-fixer-prompts-to-8-edits-or-fewer
 supersedes: -
 ---
 ## What I hit
