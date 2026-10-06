@@ -487,14 +487,30 @@ def _collect_targets(args) -> list:
     return [path.stem]
 
 
-def _ratify_section(body: str, existing: str, slug: str) -> str:
+def _demote_headings(body: str) -> str:
+    lines = []
+    in_fence = False
+    for line in body.splitlines():
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            lines.append(line)
+            continue
+        if not in_fence and re.match(r"^#{1,5} ", line):
+            lines.append("#" + line)
+            continue
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def _ratify_section(body: str, existing: str, slug: str, title: str = "") -> str:
     if existing and not existing.endswith("\n"):
         separator = "\n\n"
     elif existing:
         separator = "\n"
     else:
         separator = ""
-    return separator + f"## {slug}\n\n" + body.strip() + "\n"
+    heading = (title or slug.replace("-", " ")).strip()
+    return separator + f"## {heading}\n\n" + _demote_headings(body.strip()) + "\n"
 
 
 def _split_post_sections(body: str) -> tuple[str, str, str]:
@@ -546,7 +562,7 @@ def _ratify_apply(resolved: list, tmp: Path) -> None:
         existing = core_path.read_text(encoding="utf-8") if core_path.is_file() else ""
         core_path.parent.mkdir(parents=True, exist_ok=True)
         with core_path.open("a", encoding="utf-8") as handle:
-            handle.write(_ratify_section(body, existing, slug))
+            handle.write(_ratify_section(body, existing, slug, str(meta.get("title", ""))))
         number = next_adr_number()
         adr_path = board / "decisions" / f"{number:04d}-{slug}.md"
         adr_path.parent.mkdir(parents=True, exist_ok=True)

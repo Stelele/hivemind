@@ -48,25 +48,25 @@ each task getting a "review for spec compliance" and a "review for code quality"
 capabilities and one that looks up best practices".*
 → [ADR 0027](../decisions/0027-a-review-gate-runs-before-you-call-it-done.md)
 
-## zod-messages-collapse-in-production-builds
+## Zod messages collapse in production builds
 
-## What I hit
+### What I hit
 
 Zod validation error messages were rendering fine in development and collapsing to a bare
 "invalid inputs" once deployed to production.
 
-## What we decided
+### What we decided
 
 Validate the schema in a production build before assuming a validation bug is a schema
 bug. Tree-shaking and minification strip the message payloads that dev mode preserved.
 
-## Why
+### Why
 
 The failure only appears after the build, so it reads as a schema problem when it is
 actually a build-configuration problem. Checking prod output first costs one build and
 saves a long wrong debugging session.
 
-## The cost
+### The cost
 
 One extra production build in the loop whenever validation behaves differently between
 environments. Worth it — the alternative is debugging the wrong layer.

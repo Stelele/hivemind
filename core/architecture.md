@@ -79,35 +79,35 @@ lets remove the autosaving feature completly. instead, lets have a dedicated sav
 the same line."*
 → [ADR 0018](../decisions/0018-explicit-save-over-autosave.md)
 
-## app-name-is-not-the-folder-name
+## App name is not the folder name
 
-## What I hit
+### What I hit
 
 `bench get-app` creates a folder whose name does not match the app's Python module name,
 so imports and `hooks.py` references end up wrong.
 
-## What we decided
+### What we decided
 
 Check `hooks.py` or `setup.py` for the canonical `app_name` before referencing anything.
 Real example: repo folder `awesome_dashboard_scripts` → `app_name` `awesome_dashboard`.
 
-## Why
+### Why
 
 The folder is a checkout location. The app name is what Frappe routes, installs and
 imports on.
 
-## The cost
+### The cost
 
 You cannot infer one from the other. Reading one line of config beats guessing every time.
 
-## frappe-call-endpoints-need-the-api-module-segmen
+## frappe.call endpoints need the .api module segment
 
-## What I hit
+### What I hit
 
 Workers kept calling `frappe.call("pos_expenses.get_expenses")` and getting a 404. The
 endpoint path is missing its module segment.
 
-## What we decided
+### What we decided
 
 `frappe.call` paths include the `.api` module segment. Always verify the module-level
 `__init__.py` exports against actual `frappe.call` usages before referencing an endpoint.
@@ -118,23 +118,23 @@ frappe.call("awesome_dashboard.api.get_data")    # correct
 frappe.call("pos_expenses.get_expenses")         # 404
 ```
 
-## Why
+### Why
 
 The Python module path and the RPC path are not the same thing. Frappe routes by dotted
 path, so the endpoint has to mirror the package layout.
 
-## The cost
+### The cost
 
 An extra lookup before every cross-app call. If you assume the layout instead of
 checking, you burn a debugging cycle instead.
 
-## bench-cli-verbs-that-do-not-exist
+## Bench CLI verbs that do not exist
 
-## What I hit
+### What I hit
 
 Repeated failures from agents and workers invoking Bench commands that do not exist.
 
-## What we decided
+### What we decided
 
 The real verbs are:
 
@@ -145,70 +145,70 @@ The real verbs are:
 | `bench run-app` | `bench set-config site developer_mode 1` |
 | `bench run_tests` | `bench run-tests --app <app>` |
 
-## Why
+### Why
 
 These three wrong verbs appeared often enough to be worth pinning. They read plausibly,
 which is exactly why they keep being guessed.
 
-## The cost
+### The cost
 
 One more place to look up. `bench --help` is authoritative and should win over this post
 if they ever disagree.
 
-## scheduler-all-interval-is-a-4-minute-tick
+## Scheduler all interval is a 4 minute tick
 
-## What I hit
+### What I hit
 
 Scheduler events with interval `all` were assumed to run every minute. They do not.
 
-## What we decided
+### What we decided
 
 `DEFAULT_SCHEDULER_TICK = 240s` (~4 minutes). An `events: all` entry runs on every tick,
 not on a one-minute cron.
 
-## Why
+### Why
 
 The scheduler is tick-driven, and the tick is four minutes by default. Assuming
 minute-level granularity makes you design retries and staleness windows around a
 guarantee the system never made.
 
-## The cost
+### The cost
 
 Anything that genuinely needs sub-minute runs must be an external scheduler, not a
 Bench `all` event.
 
-## page-permissions-beat-js-role-gates
+## Page permissions beat JS role gates
 
-## What I hit
+### What I hit
 
 A page rendered for the user while its JavaScript refused to act, producing a confusing
 half-working UI.
 
-## What we decided
+### What we decided
 
 Page-level DocType permissions and JavaScript role gates can diverge. **The page `perm`
 wins at render time.** A user can see a page that JS then blocks, or fail to see a page
 whose JS would have allowed it.
 
-## Why
+### Why
 
 Rendering happens before any of your JS runs, so permission resolution cannot be undone
 by a client-side check.
 
-## The cost
+### The cost
 
 Two systems to keep in sync, and the client-side one is advisory only. Treat JS role
 checks as UX, never as authorization.
 
-## move-dense-controls-into-the-drawer-on-mobile
+## Move dense controls into the drawer on mobile
 
-## What I hit
+### What I hit
 
 Reworking the erpnext-dashboard mobile view. Two problems were tangled together: the nav
 drawer, and reporting-period selection. The period control was a row of small slices and
 users were misclicking them.
 
-## What we decided
+### What we decided
 
 Move the period selector **into** the drawer rather than fighting it on the main surface.
 One control, one place, larger tap targets.
@@ -219,12 +219,12 @@ mobile (< lg)
   └─ drawer:         nav · logout · period selector
 ```
 
-## Why
+### Why
 
 The misclicks were a symptom of control density on a small screen, not of the control
 itself. Relocating it solved both problems at once instead of treating them separately.
 
-## The cost
+### The cost
 
 One fewer always-visible control, so the period is less discoverable on mobile. Accepted
 in exchange for not shipping a control people misclick.

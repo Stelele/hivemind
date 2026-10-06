@@ -61,44 +61,44 @@ imperative subject. One logical change per commit. Body only when the *why* is n
 from the subject.
 → [ADR 0006](../decisions/0006-conventional-commit-subjects-one-change-per-commit.md)
 
-## keep-fixer-prompts-to-8-edits-or-fewer
+## Keep fixer prompts to 8 edits or fewer
 
-## What I hit
+### What I hit
 
 Fixer agents were hitting step limits on batches of 10 or more edits.
 
-## What we decided
+### What we decided
 
 Keep fixer prompts to **8 edits or fewer**, and quote the exact string to replace. Longer
 batches exhaust the agent's step budget mid-fix.
 
-## Why
+### Why
 
 Step budget scales with the number of distinct decisions in the prompt, not the number of
 lines. Exact strings remove the re-reading that inflates it.
 
-## The cost
+### The cost
 
 More, smaller dispatches. Batch by concern rather than by file count.
 
-## reviewer-line-numbers-go-stale
+## Reviewer line numbers go stale
 
-## What I hit
+### What I hit
 
 Reviewer reports referenced line numbers that no longer matched the file after intervening
 edits, so applying their suggestions corrupted the source.
 
-## What we decided
+### What we decided
 
 Always adjudicate a review against the **current** source before applying anything. Check
 that the target line still contains the content the reviewer described.
 
-## Why
+### Why
 
 Reviewers reason over a snapshot. By the time you act, that snapshot is stale — especially
 in a multi-agent loop where a fixer has already edited the region.
 
-## The cost
+### The cost
 
 An extra verification step per finding. Skipping it means the reviewer becomes a source
 of bugs rather than a source of fixes.

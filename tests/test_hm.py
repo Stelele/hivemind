@@ -304,7 +304,7 @@ class HmTestCase(unittest.TestCase):
         self.assertTrue(after.startswith(existing))
         self.assertEqual(after[: len(existing)], existing)
         self.assertNotEqual(after, existing)
-        self.assertIn("## pinia-over-vuex-for-new-stores", after)
+        self.assertIn("## Pinia over Vuex for new stores", after)
         self.assertIn("Something happened here.", after)
         meta, _ = self.read_post(pid)
         self.assertEqual(meta["status"], "promoted")
@@ -361,7 +361,7 @@ if __name__ == "__main__":
     unittest.main()
 
 
-class AdrSectionMappingTest(HmTestCase):
+class AdrSectionMappingTest(unittest.TestCase):
     def test_post_sections_map_into_adr(self):
         body = (
             "## What I hit\n\nThe thing broke.\n\n"
@@ -388,3 +388,28 @@ class AdrSectionMappingTest(HmTestCase):
         for section in ("## Context", "## Decision", "## Consequences"):
             tail = text.split(section, 1)[1].lstrip("\n").strip()
             self.assertNotEqual(tail, "", f"{section} is empty")
+
+
+class CoreSectionShapeTest(unittest.TestCase):
+    def test_demote_headings_nests_body_under_rule(self):
+        body = "## What I hit\n\nA\n\n## The cost\n\nB\n"
+        out = hm._ratify_section(body, "", "some-rule-slug", "Some rule slug")
+        lines = out.splitlines()
+        self.assertEqual(lines[0], "## Some rule slug")
+        self.assertIn("### What I hit", lines)
+        self.assertIn("### The cost", lines)
+        self.assertNotIn("## What I hit", lines)
+
+    def test_demote_headings_leaves_fenced_code_alone(self):
+        body = "## Real\n\n```\n## not a heading\n```\n"
+        out = hm._ratify_section(body, "", "slug", "Title")
+        self.assertIn("## not a heading", out.splitlines())
+
+    def test_demote_is_cumulative_for_deeper_levels(self):
+        body = "### Already nested\n"
+        out = hm._ratify_section(body, "", "slug", "Title")
+        self.assertIn("#### Already nested", out.splitlines())
+
+    def test_title_is_preferred_over_slug(self):
+        out = hm._ratify_section("x", "", "truncated-slug", "Full Title With API")
+        self.assertTrue(out.startswith("## Full Title With API"))

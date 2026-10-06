@@ -48,15 +48,15 @@ help me consolidate the logic between the two functions."*
 Prefer returning absent/optional over inventing a sentinel value. `null`/`undefined` is an
 acceptable answer; a magic default that silently becomes real data is not.
 
-## typescript-explicit-types-import-type-zod-derive
+## TypeScript: explicit types, import type, zod-derived types
 
-## What I hit
+### What I hit
 
 The same TypeScript conventions were restated in three places at once —
 `cms-system/AGENTS.md`, `cms-system/frontend/AGENTS.md` and
 `personal-site/frontend/AGENTS.md` — and kept drifting apart.
 
-## What we decided
+### What we decided
 
 ```typescript
 // explicit types on params and return values
@@ -78,24 +78,24 @@ type Schema = z.output<typeof schema>
 - `interface` for object shapes, `type` for unions and aliases.
 - Derive types from the runtime validator so they cannot drift.
 
-## Why
+### Why
 
 When the same rule lives in three files, it gets updated in two of them. The drift is
 silent and the wrong file becomes the reference.
 
-## The cost
+### The cost
 
 Explicit return types are noise where inference is obvious, and `z.output` costs a
 line. Bought: types that cannot contradict the validator.
 
-## vue-components-script-setup-block-order-withdefa
+## Vue components: script setup, block order, withDefaults
 
-## What I hit
+### What I hit
 
 Three AGENTS.md files each carried their own Vue component structure, and they had
 already diverged.
 
-## What we decided
+### What we decided
 
 `<script setup lang="ts">` for every component, and this block order:
 
@@ -124,25 +124,25 @@ const localState = ref('')
 - `withDefaults` for optional props that need a default.
 - Components are referenced through the `@/` alias, never a relative path.
 
-## Why
+### Why
 
 Ordering and `<script setup>` are enforced by ESLint in these repos anyway, so stating
 them once on the board removes four places to keep in sync and gives non-Vue projects
 the same shape.
 
-## The cost
+### The cost
 
 Enforced-by-linter rules are now documented twice. Accepted — the linter is the
 enforcement, the board is the explanation.
 
-## one-fixed-import-order-five-tiers
+## One fixed import order, five tiers
 
-## What I hit
+### What I hit
 
 Import ordering was specified two different ways in two files, one saying "internal
 absolute" third and the other putting path aliases fourth.
 
-## What we decided
+### What we decided
 
 One fixed order:
 
@@ -154,24 +154,24 @@ One fixed order:
 5. relative imports            import { y } from './utils'
 ```
 
-## Why
+### Why
 
 A stable order makes diffs small and removes a recurring point of disagreement in review.
 Two variants of the same rule is worse than no rule.
 
-## The cost
+### The cost
 
 A strict order means reorganising imports in older files when they are next touched,
 which produces occasional noisy diffs.
 
-## one-naming-table-for-typescript-and-net
+## One naming table for TypeScript and .NET
 
-## What I hit
+### What I hit
 
 Each frontend project carried its own naming table, and personal-site's said
 `PascalCase` for stores while cms-system's said `camelCase + store suffix`.
 
-## What we decided
+### What we decided
 
 | Thing | Convention | Example |
 |---|---|---|
@@ -185,24 +185,24 @@ Each frontend project carried its own naming table, and personal-site's said
 `.NET` side: namespaces and classes PascalCase, records for DTOs and commands/queries,
 filename matches the type, method parameters camelCase.
 
-## Why
+### Why
 
 Predictable names mean an agent can find the file without reading it first. The
 disagreement between "PascalCase for stores" and "camelCase for stores" is exactly the
 kind of thing that only surfaces when someone writes a new store from memory.
 
-## The cost
+### The cost
 
 Renaming to match the table creates churn in files that were already correct under the
 other convention.
 
-## pinia-stores-use-composition-syntax-and-check-er
+## Pinia stores use composition syntax and check error
 
-## What I hit
+### What I hit
 
 Store conventions existed in two repos with different registration styles.
 
-## What we decided
+### What we decided
 
 Pinia stores use the composition (function) syntax, one responsibility each, exposed
 through a `use…Store` function.
@@ -225,23 +225,23 @@ export const useBlogStore = defineStore('blogStore', () => {
 - `ref()` not `reactive()` inside stores — consistent unwrapping.
 - Handles the error case; never destructure `data` without checking `error`.
 
-## Why
+### Why
 
 Function-syntax stores read the same as the components that consume them, and the
 `{ data, error }` shape from openapi-fetch forces the error branch to be visible.
 
-## The cost
+### The cost
 
 A little ceremony per store, and option-style stores will not match.
 
-## one-typed-api-client-generated-schema-null-safe
+## One typed API client, generated schema, null-safe
 
-## What I hit
+### What I hit
 
 Both frontends fetch through a generated API layer, but each had documented its own
 singleton in isolation.
 
-## What we decided
+### What we decided
 
 The shape, not the class name:
 
@@ -257,12 +257,12 @@ if (error) return
 const blogs = data ?? []
 ```
 
-## Why
+### Why
 
 Generated types mean the frontend breaks at compile time when the backend contract
 changes, instead of at runtime in front of a user.
 
-## The cost
+### The cost
 
 The API surface is only as good as the spec — a wrong OpenAPI document produces
 confidently wrong types.
