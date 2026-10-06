@@ -7,8 +7,8 @@ projects: [erpnext-dashboard, njeremoto-operations, personal-site]
 origin: gift
 posted: 2026-10-06T22:53+02:00
 endorsements: 3
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/architecture.md#move-dense-controls-into-the-drawer-on-mobile
 supersedes: -
 ---
 ## What I hit

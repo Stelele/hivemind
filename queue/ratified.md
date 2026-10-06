@@ -11,3 +11,4 @@
 - 2026-10-06 | 20261006-2252-bench-cli-verbs-that-do-not-exist | ADR 0041
 - 2026-10-06 | 20261006-2252-scheduler-all-interval-is-a-4-minute-tick | ADR 0042
 - 2026-10-06 | 20261006-2252-page-permissions-beat-js-role-gates | ADR 0043
+- 2026-10-06 | 20261006-2253-move-dense-controls-into-the-drawer-on-mobile | ADR 0044
