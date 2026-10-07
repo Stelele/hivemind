@@ -4,6 +4,9 @@
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
+| Rebase merges only; linear history | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
+| Default branch is protected; PR-only, no force push | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
+| Address CodeRabbit comments before claiming done | preference | 3 | [frappe-offline](by-project.md#frappe-offline), [class-booking-system](by-project.md#class-booking-system), [cms-system](by-project.md#cms-system), [njeremoto-operations](by-project.md#njeremoto-operations) |
 | Pinia stores use composition syntax and check error | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations) |
 | One typed API client, generated schema, null-safe | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 | One naming table for TypeScript and .NET | preference | 4 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |

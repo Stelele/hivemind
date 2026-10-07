@@ -8,6 +8,7 @@
 | --- | --- | --- | --- |
 | Keep fixer prompts to 8 edits or fewer | lesson | 3 | [opencode-config](by-project.md#opencode-config) |
 | Reviewer line numbers go stale | lesson | 3 | [opencode-config](by-project.md#opencode-config) |
+| Address CodeRabbit comments before claiming done | preference | 3 | [frappe-offline](by-project.md#frappe-offline), [class-booking-system](by-project.md#class-booking-system), [cms-system](by-project.md#cms-system), [njeremoto-operations](by-project.md#njeremoto-operations) |
 
 ## api
 
@@ -36,6 +37,12 @@
 | Bench CLI verbs that do not exist | lesson | 3 | [frappe-offline](by-project.md#frappe-offline), [frappe-bench](by-project.md#frappe-bench) |
 | Scheduler all interval is a 4 minute tick | lesson | 3 | [frappe-offline](by-project.md#frappe-offline) |
 
+## branch-protection
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Default branch is protected; PR-only, no force push | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
+
 ## build
 
 | title | kind | score | project links |
@@ -56,6 +63,12 @@
 | TypeScript: explicit types, import type, zod-derived types | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations) |
 | Vue components: script setup, block order, withDefaults | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 | One naming table for TypeScript and .NET | preference | 4 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+
+## coderabbit
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Address CodeRabbit comments before claiming done | preference | 3 | [frappe-offline](by-project.md#frappe-offline), [class-booking-system](by-project.md#class-booking-system), [cms-system](by-project.md#cms-system), [njeremoto-operations](by-project.md#njeremoto-operations) |
 
 ## components
 
@@ -88,6 +101,12 @@
 | Name the capability, then pick the database | decision | 3 | [pesepay-payment-gateway](by-project.md#pesepay-payment-gateway), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 | One naming table for TypeScript and .NET | preference | 4 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 
+## enforcement
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Default branch is protected; PR-only, no force push | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
+
 ## frappe
 
 | title | kind | score | project links |
@@ -98,11 +117,25 @@
 | Page permissions beat JS role gates | lesson | 3 | [awesome_restaurant3](by-project.md#awesome-restaurant3), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 | Scheduler all interval is a 4 minute tick | lesson | 3 | [frappe-offline](by-project.md#frappe-offline) |
 
+## git
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Address CodeRabbit comments before claiming done | preference | 3 | [frappe-offline](by-project.md#frappe-offline), [class-booking-system](by-project.md#class-booking-system), [cms-system](by-project.md#cms-system), [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Default branch is protected; PR-only, no force push | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
+| Rebase merges only; linear history | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
+
 ## imports
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | One fixed import order, five tiers | preference | 4 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations) |
+
+## merging
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Rebase merges only; linear history | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
 
 ## mobile
 
@@ -152,6 +185,7 @@
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | Reviewer line numbers go stale | lesson | 3 | [opencode-config](by-project.md#opencode-config) |
+| Address CodeRabbit comments before claiming done | preference | 3 | [frappe-offline](by-project.md#frappe-offline), [class-booking-system](by-project.md#class-booking-system), [cms-system](by-project.md#cms-system), [njeremoto-operations](by-project.md#njeremoto-operations) |
 
 ## scheduler
 
@@ -216,6 +250,13 @@
 | Vue components: script setup, block order, withDefaults | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 | One typed API client, generated schema, null-safe | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 | Pinia stores use composition syntax and check error | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations) |
+
+## workflow
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Default branch is protected; PR-only, no force push | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
+| Rebase merges only; linear history | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
 
 ## zod
 

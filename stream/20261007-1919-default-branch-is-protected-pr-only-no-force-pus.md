@@ -7,8 +7,8 @@ projects: [cms-system, personal-site, njeremoto-operations, hivemind, dotfiles]
 origin: gift
 posted: 2026-10-07T19:19+02:00
 endorsements: 3
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/workflow.md#default-branch-is-protected-pr-only-no-force-pus
 supersedes: -
 ---
 ## What I hit
