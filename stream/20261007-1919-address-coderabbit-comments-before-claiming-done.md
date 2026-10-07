@@ -7,8 +7,8 @@ projects: [frappe-offline, class-booking-system, cms-system, njeremoto-operation
 origin: gift
 posted: 2026-10-07T19:19+02:00
 endorsements: 3
-status: queued
-promoted-to: -
+status: promoted
+promoted-to: core/workflow.md#address-coderabbit-comments-before-claiming-done
 supersedes: -
 ---
 ## What I hit

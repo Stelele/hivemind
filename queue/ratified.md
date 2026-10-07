@@ -18,3 +18,4 @@
 - 2026-10-06 | 20261006-2253-zod-messages-collapse-in-production-builds | ADR 0048
 - 2026-10-07 | 20261007-1919-default-branch-is-protected-pr-only-no-force-pus | ADR 0049
 - 2026-10-07 | 20261007-1919-rebase-merges-only-linear-history | ADR 0050
+- 2026-10-07 | 20261007-1919-address-coderabbit-comments-before-claiming-done | ADR 0051
