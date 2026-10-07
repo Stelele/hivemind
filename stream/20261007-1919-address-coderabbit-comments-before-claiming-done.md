@@ -6,7 +6,7 @@ topics: [git, review, coderabbit, agents]
 projects: [frappe-offline, class-booking-system, cms-system, njeremoto-operations]
 origin: gift
 posted: 2026-10-07T19:19+02:00
-endorsements: 0
+endorsements: 1
 status: stream
 promoted-to: -
 supersedes: -
