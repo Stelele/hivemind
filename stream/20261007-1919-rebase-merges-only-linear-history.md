@@ -6,7 +6,7 @@ topics: [git, workflow, merging]
 projects: [cms-system, personal-site, njeremoto-operations, hivemind, dotfiles]
 origin: gift
 posted: 2026-10-07T19:19+02:00
-endorsements: 1
+endorsements: 2
 status: stream
 promoted-to: -
 supersedes: -
