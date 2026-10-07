@@ -2,6 +2,10 @@
 
 ## Never commit, push, or open a PR without an explicit instruction
 
+> **Superseded by [ADR 0049](../decisions/0049-default-branch-is-protected-pr-only-no-force-pus.md).**
+> Protection now lives in the repository itself rather than in agent memory. The
+> agent-side half of this rule is retained and still applies — see below.
+
 Do not commit. Do not push. Do not open a PR. Not even a "safe" small one. Not even when
 a subagent finished the work cleanly. Leave the change in the working tree and say what
 you did.
@@ -13,6 +17,7 @@ the no-commit instruction goes in the prompt.
 or your subagents when you do changes. I like to see everything thats written and give
 reviews." Repeated unprompted across cms-system, personal-site and erpnext-dashboard.*
 → [ADR 0001](../decisions/0001-never-commit-without-an-explicit-instruction.md)
+*(superseded 2026-10-07 by ADR 0049)*
 
 ## Batch the change, then test once
 
