@@ -6,7 +6,7 @@ topics: [git, github, branch-protection, enforcement]
 projects: [hivemind, njeremoto-operations, dotfiles]
 origin: gift
 posted: 2026-10-07T19:24+02:00
-endorsements: 0
+endorsements: 1
 status: stream
 promoted-to: -
 supersedes: -
