@@ -4,6 +4,7 @@
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
+| Repository baseline: auto-delete merged branches, and protect every default branch | decision | 0 | [hivemind](by-project.md#hivemind), [njeremoto-operations](by-project.md#njeremoto-operations), [camera-nvr](by-project.md#camera-nvr) |
 | Agents commit freely to feature branches; the default branch stays PR-only | decision | 0 | [hivemind](by-project.md#hivemind), [camera-nvr](by-project.md#camera-nvr) |
 | Unquoted {VAR} in YAML is a flow mapping, not a placeholder | lesson | 0 | [camera-nvr](by-project.md#camera-nvr) |
 | env_file plus environment duplicates every default in compose | lesson | 0 | [camera-nvr](by-project.md#camera-nvr) |

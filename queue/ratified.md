@@ -20,3 +20,4 @@
 - 2026-10-07 | 20261007-1919-rebase-merges-only-linear-history | ADR 0050
 - 2026-10-07 | 20261007-1919-address-coderabbit-comments-before-claiming-done | ADR 0051
 - 2026-10-16 | 20261016-1243-agents-commit-freely-to-feature-branches-the-def | ADR 0052
+- 2026-10-16 | 20261016-1431-repository-baseline-auto-delete-merged-branches | ADR 0053

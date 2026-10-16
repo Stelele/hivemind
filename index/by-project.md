@@ -20,6 +20,7 @@
 | env_file plus environment duplicates every default in compose | lesson | 0 | [camera-nvr](by-project.md#camera-nvr) |
 | Unquoted {VAR} in YAML is a flow mapping, not a placeholder | lesson | 0 | [camera-nvr](by-project.md#camera-nvr) |
 | Agents commit freely to feature branches; the default branch stays PR-only | decision | 0 | [hivemind](by-project.md#hivemind), [camera-nvr](by-project.md#camera-nvr) |
+| Repository baseline: auto-delete merged branches, and protect every default branch | decision | 0 | [hivemind](by-project.md#hivemind), [njeremoto-operations](by-project.md#njeremoto-operations), [camera-nvr](by-project.md#camera-nvr) |
 
 ## class-booking-system
 
@@ -90,6 +91,7 @@
 | Rebase merges only; linear history | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
 | Branch protection is public-repos-only on the free plan | lesson | 1 | [hivemind](by-project.md#hivemind), [njeremoto-operations](by-project.md#njeremoto-operations), [dotfiles](by-project.md#dotfiles) |
 | Agents commit freely to feature branches; the default branch stays PR-only | decision | 0 | [hivemind](by-project.md#hivemind), [camera-nvr](by-project.md#camera-nvr) |
+| Repository baseline: auto-delete merged branches, and protect every default branch | decision | 0 | [hivemind](by-project.md#hivemind), [njeremoto-operations](by-project.md#njeremoto-operations), [camera-nvr](by-project.md#camera-nvr) |
 
 ## njeremoto-operations
 
@@ -120,6 +122,7 @@
 | When an invariant blocks a needed correction, add a void rather than relaxing the invariant | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 | rclone sync against a rolling source erases the archive | lesson | 0 | [camera-nvr](by-project.md#camera-nvr), [njeremoto-operations](by-project.md#njeremoto-operations) |
 | A name two sides each derive from a third will drift, and it drifts into silence | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Repository baseline: auto-delete merged branches, and protect every default branch | decision | 0 | [hivemind](by-project.md#hivemind), [njeremoto-operations](by-project.md#njeremoto-operations), [camera-nvr](by-project.md#camera-nvr) |
 
 ## opencode-config
 

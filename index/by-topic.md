@@ -588,6 +588,7 @@
 | Default branch is protected; PR-only, no force push | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
 | Rebase merges only; linear history | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
 | Agents commit freely to feature branches; the default branch stays PR-only | decision | 0 | [hivemind](by-project.md#hivemind), [camera-nvr](by-project.md#camera-nvr) |
+| Repository baseline: auto-delete merged branches, and protect every default branch | decision | 0 | [hivemind](by-project.md#hivemind), [njeremoto-operations](by-project.md#njeremoto-operations), [camera-nvr](by-project.md#camera-nvr) |
 
 ## yaml
 

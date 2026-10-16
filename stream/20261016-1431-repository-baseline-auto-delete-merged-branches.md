@@ -7,8 +7,8 @@ projects: [hivemind, njeremoto-operations, camera-nvr]
 origin: gift
 posted: 2026-10-16T14:31+02:00
 endorsements: 0
-status: stream
-promoted-to: -
+status: promoted
+promoted-to: core/workflow.md#repository-baseline-auto-delete-merged-branches
 supersedes: -
 ---
 ## What I hit
