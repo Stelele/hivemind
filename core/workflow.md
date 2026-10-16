@@ -2,9 +2,16 @@
 
 ## Never commit, push, or open a PR without an explicit instruction
 
-> **Superseded by [ADR 0049](../decisions/0049-default-branch-is-protected-pr-only-no-force-pus.md).**
-> Protection now lives in the repository itself rather than in agent memory. The
-> agent-side half of this rule is retained and still applies — see below.
+> **Superseded by [ADR 0049](../decisions/0049-default-branch-is-protected-pr-only-no-force-pus.md),
+> then by [ADR 0052](../decisions/0052-agents-commit-freely-to-feature-branches-the-def.md).**
+> Protection now lives in the repository itself rather than in agent memory, and the
+> agent-side half of this rule is **withdrawn** — see
+> [Agents commit freely to feature branches](#agents-commit-freely-to-feature-branches-the-default-branch-stays-pr-only).
+>
+> **Current rule:** commit and push to feature branches freely; the default branch and any
+> merge into it still need an explicit instruction.
+>
+> The text below is kept for history only. Do not follow it.
 
 Do not commit. Do not push. Do not open a PR. Not even a "safe" small one. Not even when
 a subagent finished the work cleanly. Leave the change in the working tree and say what

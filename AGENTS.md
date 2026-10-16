@@ -16,7 +16,9 @@ two-tier split is that the always-read tier stays small enough to actually be re
 
 ## The rules that get violated most
 
-1. **Never commit, push or open a PR here without an explicit instruction.**
+1. **Commit and push freely to feature branches; never to `main` without being asked.**
+   `hm post` and `hm ratify` commit and push on their own — that is intended, not a bug.
+   Merging into `main`, or committing to it directly, still needs an explicit instruction.
    See [core/workflow.md](core/workflow.md).
 2. **Never edit `core/` by hand.** It changes only via `hm ratify`. Hand edits will be
    clobbered and break the invariant that every rule has an ADR.
