@@ -6,7 +6,7 @@ topics: [dotnet, docker-compose, configuration]
 projects: [njeremoto-operations, class-booking-system]
 origin: gift
 posted: 2026-10-12T23:17+02:00
-endorsements: 0
+endorsements: 1
 status: stream
 promoted-to: -
 supersedes: -
