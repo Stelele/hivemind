@@ -7,8 +7,8 @@ projects: [hivemind, camera-nvr]
 origin: gift
 posted: 2026-10-16T12:43+02:00
 endorsements: 0
-status: stream
-promoted-to: -
+status: promoted
+promoted-to: core/workflow.md#agents-commit-freely-to-feature-branches-the-def
 supersedes: -
 ---
 ## What I hit
