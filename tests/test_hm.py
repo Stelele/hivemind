@@ -50,13 +50,68 @@ class HmTestCase(unittest.TestCase):
         git("add", "-A", cwd=self.board)
         git("commit", "-m", "init", cwd=self.board)
         git("init", "--bare", str(self.origin), cwd=self.tmp)
+        git("symbolic-ref", "HEAD", "refs/heads/main", cwd=self.origin)
         git("remote", "add", "origin", str(self.origin), cwd=self.board)
         git("push", "-u", "origin", "main", cwd=self.board)
+        git("remote", "set-head", "origin", "-a", cwd=self.board)
         os.environ["HIVEMIND_BOARD"] = str(self.board)
+        self.checkout_feature_branch()
 
     def tearDown(self):
         os.environ.pop("HIVEMIND_BOARD", None)
         shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def checkout_feature_branch(self, name="post/board-fixture"):
+        git("checkout", "-b", name, cwd=self.board)
+        self.checkout_branch = name
+        return name
+
+    def reject_pushes(self):
+        """Install a pre-receive hook on the bare origin that refuses every push.
+
+        The upstream is established first, so the rejection happens at the hook
+        rather than at git's 'no upstream branch' check.
+        """
+        git("push", "-u", "origin", self.checkout_branch, cwd=self.board)
+        hook = self.origin / "hooks" / "pre-receive"
+        hook.write_text(
+            "#!/bin/sh\n"
+            'echo "remote: GH003: Protected branch update failed."\n'
+            'echo "remote: Changes must be made through a pull request."\n'
+            "exit 1\n",
+            encoding="utf-8",
+        )
+        hook.chmod(0o755)
+        return hook
+
+    def head_sha(self):
+        return git("rev-parse", "HEAD", cwd=self.board).stdout.strip()
+
+    def config_get(self, key):
+        proc = subprocess.run(
+            ["git", "config", "--get", key], cwd=str(self.board),
+            capture_output=True, text=True,
+        )
+        return proc.stdout.strip()
+
+    def is_ancestor(self, ancestor, descendant):
+        return (
+            subprocess.run(
+                ["git", "merge-base", "--is-ancestor", ancestor, descendant],
+                cwd=str(self.board), capture_output=True, text=True,
+            ).returncode == 0
+        )
+
+    def advance_remote_main(self, message="other: lands a commit on main"):
+        other = Path(self.tmp) / "other"
+        git("clone", str(self.origin), str(other), cwd=self.tmp)
+        git("config", "user.email", "other@example.com", cwd=other)
+        git("config", "user.name", "Other User", cwd=other)
+        (other / "elsewhere.md").write_text("x\n", encoding="utf-8")
+        git("add", "-A", cwd=other)
+        git("commit", "-m", message, cwd=other)
+        git("push", "origin", "main", cwd=other)
+        return git("rev-parse", "HEAD", cwd=other).stdout.strip()
 
     def run_cli(self, *args):
         out = io.StringIO()
@@ -118,6 +173,36 @@ class HmTestCase(unittest.TestCase):
             for path in sorted(core.rglob("*"))
             if path.is_file()
         }
+
+    def snapshot_board(self):
+        out = {}
+        for name in ("core", "stream", "queue", "decisions", "index"):
+            folder = self.board / name
+            for path in sorted(folder.rglob("*")):
+                if path.is_file():
+                    out[str(path.relative_to(self.board))] = path.read_bytes()
+        return out
+
+    def seed_queued_post(self, pid, title="Alpha change", topic="stack"):
+        """A post sitting in the queue, with its inbox row, committed on this branch."""
+        self.add_post(
+            pid,
+            kind="decision",
+            title=title,
+            topics=[topic],
+            status="queued",
+            endorsements=3,
+        )
+        inbox = self.board / "queue" / "inbox.md"
+        inbox.parent.mkdir(parents=True, exist_ok=True)
+        inbox.write_text(
+            "# Queue\n\n| title | kind | score | project links |\n"
+            "| --- | --- | --- | --- |\n"
+            f"| {pid} | {title} | 3 | proj-a |\n",
+            encoding="utf-8",
+        )
+        self.commit_all()
+        return pid
 
     def assert_rejected(self, text):
         path = Path(self.tmp) / f"junk-{abs(hash(text))}.md"
@@ -357,8 +442,110 @@ class HmTestCase(unittest.TestCase):
         self.assertIn("State management call", new)
 
 
-if __name__ == "__main__":
-    unittest.main()
+
+
+    def test_ratify_rolls_back_when_push_is_rejected(self):
+        pid = self.seed_queued_post("20261006-1000-alpha-change")
+        before = self.snapshot_board()
+        before_head = self.head_sha()
+        self.reject_pushes()
+
+        code, _, err = self.run_cli("ratify", "--all")
+
+        self.assertEqual(code, 3, err)
+        self.assertIn("rolled back", err)
+        self.assertEqual(self.snapshot_board(), before)
+        self.assertEqual(self.head_sha(), before_head)
+        meta, _ = self.read_post(pid)
+        self.assertEqual(meta["status"], "queued")
+        self.assertEqual(len(self.inbox_rows()), 1)
+        self.assertEqual(self.porcelain(), "")
+        self.assertFalse((self.board / ".hivemind-tmp").exists())
+
+    def test_push_failure_does_not_rebase_local_history(self):
+        pid = "20261006-1100-beta-change"
+        self.add_post(pid, topics=["stack"], status="stream", endorsements=0)
+        self.commit_all()
+        parent_before = self.head_sha()
+        remote_main = self.advance_remote_main()
+        self.reject_pushes()
+
+        code, _, err = self.run_cli("endorse", pid)
+
+        self.assertEqual(code, 2, err)
+        # the endorsement is a fresh commit on top of what was already there...
+        self.assertEqual(
+            git("rev-parse", "HEAD^", cwd=self.board).stdout.strip(), parent_before
+        )
+        # ...and nothing was rebased onto the new remote main
+        self.assertFalse(
+            self.is_ancestor(remote_main, "HEAD"),
+            "hm silently rebased local history onto the new remote main",
+        )
+        self.assertFalse((self.board / ".git" / "rebase-merge").exists())
+        self.assertFalse((self.board / ".git" / "rebase-apply").exists())
+        self.assertEqual(self.porcelain(), "")
+
+    def test_writes_refused_on_the_default_branch(self):
+        git("checkout", "main", cwd=self.board)
+
+        code, _, err = self.run_cli(
+            "post", "--title", "Stranded on main", "--kind", "lesson",
+            "--topics", "stack", "--projects", "proj-a",
+        )
+
+        self.assertEqual(code, 4, err)
+        self.assertIn("main", err)
+        self.assertEqual(self.porcelain(), "")
+        self.assertEqual(list((self.board / "stream").glob("*.md")), [])
+        self.assertEqual(self.head_sha(), git("rev-parse", "main", cwd=self.board).stdout.strip())
+
+    def test_endorse_and_ratify_also_refuse_the_default_branch(self):
+        pid = self.seed_queued_post("20261006-1000-alpha-change")
+        head_before = self.head_sha()
+        git("checkout", "main", cwd=self.board)
+
+        code, _, err = self.run_cli("endorse", pid)
+        self.assertEqual(code, 4, err)
+
+        code, _, err = self.run_cli("ratify", "--all")
+        self.assertEqual(code, 4, err)
+
+        git("checkout", self.checkout_branch, cwd=self.board)
+        self.assertEqual(self.head_sha(), head_before)
+        meta, _ = self.read_post(pid)
+        self.assertEqual(meta["status"], "queued")
+
+    def test_guard_follows_the_remote_default_branch_not_the_word_main(self):
+        git("branch", "trunk", cwd=self.board)
+        git("push", "-u", "origin", "trunk", cwd=self.board)
+        git("remote", "set-head", "origin", "trunk", cwd=self.board)
+        git("checkout", "trunk", cwd=self.board)
+
+        code, _, err = self.run_cli(
+            "post", "--title", "Stranded on trunk", "--kind", "lesson",
+            "--topics", "stack", "--projects", "proj-a",
+        )
+
+        self.assertEqual(code, 4, err)
+        self.assertIn("trunk", err)
+        self.assertEqual(list((self.board / "stream").glob("*.md")), [])
+
+    def test_endorse_pushes_a_branch_that_has_no_upstream(self):
+        pid = "20261006-1200-gamma-change"
+        self.add_post(pid, topics=["stack"], status="stream", endorsements=0)
+        self.commit_all()
+        self.assertEqual(
+            self.config_get(f"branch.{self.checkout_branch}.merge"), ""
+        )
+
+        code, _, err = self.run_cli("endorse", pid)
+
+        self.assertEqual(code, 0, err)
+        meta, _ = self.read_post(pid)
+        self.assertEqual(meta["endorsements"], "1")
+        refs = git("ls-remote", "--heads", "origin", cwd=self.board).stdout
+        self.assertIn(f"refs/heads/{self.checkout_branch}", refs)
 
 
 class AdrSectionMappingTest(unittest.TestCase):
@@ -413,3 +600,7 @@ class CoreSectionShapeTest(unittest.TestCase):
     def test_title_is_preferred_over_slug(self):
         out = hm._ratify_section("x", "", "truncated-slug", "Full Title With API")
         self.assertTrue(out.startswith("## Full Title With API"))
+
+
+if __name__ == "__main__":
+    unittest.main()

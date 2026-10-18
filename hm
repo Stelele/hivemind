@@ -13,6 +13,8 @@ from pathlib import Path
 THRESHOLD = 3
 CORE_TOPICS = ["stack", "code-style", "architecture", "testing", "workflow", "communication"]
 KINDS = ["decision", "lesson", "preference", "inspiration", "observation", "question"]
+PROTECTED_FALLBACK = ("main", "master")
+DEFAULT_REMOTE = "origin"
 
 KEY_RE = re.compile(r"^([A-Za-z][A-Za-z0-9_-]*): (.*)$")
 BARE_KEY_RE = re.compile(r"^([A-Za-z][A-Za-z0-9_-]*):$")
@@ -195,16 +197,28 @@ def run_git(*args, cwd=None) -> subprocess.CompletedProcess:
     return proc
 
 
-def push_with_retry():
+def _current_branch() -> str:
+    return run_git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+
+
+def push_or_stop() -> None:
+    """Push the current branch. Never rebase on the user's behalf.
+
+    A rejected push is reported, never papered over: silently rebasing rewrites
+    local history the user has not looked at yet, on a branch that may be the
+    protected default.
+    """
     try:
-        return run_git("push")
-    except Exception:
-        run_git("pull", "--rebase")
-    try:
-        return run_git("push")
-    except Exception:
-        die("push failed after rebase+retry. Your change is saved locally. "
-            "Nothing was lost. Resolve and push manually.", code=2)
+        run_git("push")
+    except GitError as exc:
+        branch = _current_branch()
+        die(
+            f"{exc}\n"
+            f"Nothing was rebased and nothing was discarded — the commit is local to "
+            f"'{branch}'. To publish it, rebase deliberately and push again:\n"
+            f"  git pull --rebase origin {branch} && git push",
+            code=2,
+        )
 
 
 def _stream_posts() -> list:
@@ -282,9 +296,41 @@ def _read_body(arg) -> str:
 
 
 def _set_upstream(remote: str) -> None:
-    branch = run_git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+    branch = _current_branch()
     run_git("config", f"branch.{branch}.remote", remote)
     run_git("config", f"branch.{branch}.merge", f"refs/heads/{branch}")
+
+
+def _remote_default_branch(remote: str) -> str:
+    try:
+        ref = run_git(
+            "symbolic-ref", "--quiet", "--short", f"refs/remotes/{remote}/HEAD"
+        ).stdout.strip()
+    except GitError:
+        return ""
+    return ref.split("/", 1)[-1] if "/" in ref else ""
+
+
+def _require_feature_branch(remote: str, action: str) -> str:
+    """Refuse to write on the protected default branch.
+
+    ADR 0049 makes the default branch PR-only. hm writes straight to whatever
+    branch it is on, so the guard has to live here or nowhere.
+    """
+    branch = _current_branch()
+    if branch in ("", "HEAD"):
+        die(f"cannot {action} from a detached HEAD; check out a branch first", code=4)
+    default = _remote_default_branch(remote)
+    protected = {default} if default else set(PROTECTED_FALLBACK)
+    if branch in protected:
+        die(
+            f"'{branch}' is the default branch and is protected — cannot {action} "
+            f"directly.\n"
+            f"Every change reaches the default branch through a pull request:\n"
+            f"  git switch -c post/<slug> && ./hm {action}",
+            code=4,
+        )
+    return branch
 
 
 def _post_path(pid: str) -> Path:
@@ -381,6 +427,11 @@ def cmd_post(args) -> None:
         die("at least one --topics value is required")
     if not projects:
         die("at least one --projects value is required")
+    try:
+        run_git("remote", "get-url", args.remote)
+    except GitError:
+        die(f"unknown git remote '{args.remote}'; pass --remote <remote name>")
+    _require_feature_branch(args.remote, "post")
     body = _read_body(args.body)
     now = datetime.now().astimezone()
     pid = make_id(args.title, now)
@@ -389,10 +440,6 @@ def cmd_post(args) -> None:
         die(f"post {pid} already exists")
     if run_git("status", "--porcelain").stdout.strip():
         die("board has uncommitted changes; refusing to post")
-    try:
-        run_git("remote", "get-url", args.remote)
-    except GitError:
-        die(f"unknown git remote '{args.remote}'; pass --remote <remote name>")
     meta = {
         "id": pid,
         "title": args.title,
@@ -411,7 +458,7 @@ def cmd_post(args) -> None:
     run_git("add", "--", str(path))
     run_git("commit", "-m", f"post: {args.title}")
     _set_upstream(args.remote)
-    push_with_retry()
+    push_or_stop()
     emit(f"posted {pid}")
 
 
@@ -439,6 +486,7 @@ def cmd_status(args) -> None:
 
 
 def cmd_endorse(args) -> None:
+    _require_feature_branch(DEFAULT_REMOTE, "endorse")
     path = _post_path(args.id)
     if not path.is_file():
         die(f"no such post: {args.id}")
@@ -459,7 +507,8 @@ def cmd_endorse(args) -> None:
     if queued:
         run_git("add", "--", str(_inbox_path()))
     run_git("commit", "-m", f"endorse: {meta.get('id')}")
-    push_with_retry()
+    _set_upstream(DEFAULT_REMOTE)
+    push_or_stop()
     emit(f"endorsed {meta.get('id')} ({count}) -> {meta.get('status')}")
 
 
@@ -576,7 +625,8 @@ def _ratify_apply(resolved: list, tmp: Path) -> None:
     regen_index()
     run_git("add", "-A")
     run_git("commit", "-m", f"ratify: {len(resolved)} post(s)")
-    push_with_retry()
+    _set_upstream(DEFAULT_REMOTE)
+    push_or_stop()
 
 
 def _rollback(sha: str, tmp: Path) -> None:
@@ -589,6 +639,7 @@ def _rollback(sha: str, tmp: Path) -> None:
 
 
 def cmd_ratify(args) -> None:
+    _require_feature_branch(DEFAULT_REMOTE, "ratify")
     targets = _collect_targets(args)
     if not targets:
         emit("nothing to ratify")
@@ -603,7 +654,9 @@ def cmd_ratify(args) -> None:
     try:
         tmp.mkdir(parents=True, exist_ok=True)
         _ratify_apply(resolved, tmp)
-    except Exception:
+    except (Exception, SystemExit):
+        # SystemExit is a BaseException, not an Exception: die() inside push_or_stop
+        # would otherwise escape and leave core/ rewritten but unpublished.
         detail = ""
         try:
             _rollback(sha, tmp)
