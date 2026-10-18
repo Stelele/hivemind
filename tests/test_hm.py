@@ -704,6 +704,71 @@ class HmTestCase(unittest.TestCase):
         self.assertIn("0052-agents-commit-freely.md", archived)
         self.assertIn("Withdrawn", archived)
 
+    LINKED_CORE_FIXTURE = (
+        "# Workflow\n"
+        "\n"
+        "## Never commit without being asked\n"
+        "\n"
+        "The agent-side half is **withdrawn** — see\n"
+        "[Agents commit freely](#agents-commit-freely-to-feature-branches-the-default-branch-stays-pr-only)\n"
+        "and [ADR 0052](../decisions/0052-x.md) for why.\n"
+        "\n"
+        "## Agents commit freely to feature branches; the default branch stays PR-only\n"
+        "\n"
+        "The live rule.\n"
+    )
+
+    def test_supersede_repairs_fragment_links_that_point_back_into_core(self):
+        core = self.board / "core" / "workflow.md"
+        core.write_text(self.LINKED_CORE_FIXTURE, encoding="utf-8")
+        (self.board / "core" / "INDEX.md").write_text(
+            "# Core\n\n1. **never commit** — "
+            "[workflow](workflow.md#never-commit-without-being-asked)\n", encoding="utf-8"
+        )
+        (self.board / "decisions" / "0052-agents-commit-freely.md").write_text(
+            "# 0052. Agents commit freely\n", encoding="utf-8"
+        )
+        self.commit_all()
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", "never-commit-without-being-asked",
+            "--in", "workflow", "--withdrawn-by", "0052",
+        )
+
+        self.assertEqual(code, 0, err)
+        archived = self.archive_text()
+        self.assertIn(
+            "(../core/workflow.md#agents-commit-freely-to-feature-branches-"
+            "the-default-branch-stays-pr-only)", archived,
+            "a fragment link in the moved section no longer resolves to its target",
+        )
+        self.assertNotIn("](#agents-commit-freely", archived)
+        # a path-relative link to decisions/ is still correct from archive/
+        self.assertIn("(../decisions/0052-x.md)", archived)
+
+    def test_supersede_repairs_nothing_when_the_fragment_has_no_heading(self):
+        core = self.board / "core" / "workflow.md"
+        core.write_text(
+            self.LINKED_CORE_FIXTURE.replace(
+                "[Agents commit freely](#agents-commit-freely-to-feature-branches-"
+                "the-default-branch-stays-pr-only)",
+                "[Something else](#no-such-heading)",
+            ),
+            encoding="utf-8",
+        )
+        (self.board / "decisions" / "0052-agents-commit-freely.md").write_text(
+            "# 0052. Agents commit freely\n", encoding="utf-8"
+        )
+        self.commit_all()
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", "never-commit-without-being-asked",
+            "--in", "workflow", "--withdrawn-by", "0052",
+        )
+
+        self.assertEqual(code, 0, err)
+        self.assertIn("](#no-such-heading)", self.archive_text())
+
     def test_supersede_records_a_note_when_given(self):
         slug = self.seed_core()
 
