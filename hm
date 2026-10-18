@@ -716,6 +716,33 @@ def _find_adr(number: str):
     return matches[0] if matches else None
 
 
+def _core_anchors(path: Path) -> set:
+    if not path.is_file():
+        return set()
+    anchors = set()
+    for line in path.read_text(encoding="utf-8").split("\n"):
+        if line.startswith("## "):
+            anchors.add(_anchor(line[3:].strip()))
+    return anchors
+
+
+def _repair_fragments(text: str, live_anchors: set, topic: str) -> str:
+    """Re-point `#anchor` links at core/, where the live headings now live.
+
+    A fragment-only link inside a moved section resolves against the file it sits
+    in. Once the section is in archive/ its targets are in core/, so the link has
+    to name that file. Fragments with no matching heading are left alone rather
+    than rewritten into something that also does not resolve.
+    """
+
+    def replace(match):
+        anchor = match.group(1)
+        target = f"../core/{topic}.md#{anchor}" if anchor in live_anchors else match.group(0)
+        return f"]({target})"
+
+    return re.sub(r"\]\(#([a-z0-9\-]+)\)", replace, text)
+
+
 def _archive_body(heading: str, section: list, adr_name: str, note, date_str: str) -> str:
     body = "\n".join(section[1:]).strip("\n")
     lines = [f"## {heading}", ""]
@@ -777,8 +804,12 @@ def _supersede_apply(topic: str, slug: str, adr_path: Path, note) -> None:
             encoding="utf-8",
         )
     existing = archive_path.read_text(encoding="utf-8").rstrip("\n")
-    tombstone = _archive_body(
-        heading, section, adr_path.name, note, datetime.now().strftime("%Y-%m-%d")
+    tombstone = _repair_fragments(
+        _archive_body(
+            heading, section, adr_path.name, note, datetime.now().strftime("%Y-%m-%d")
+        ),
+        _core_anchors(core_path),
+        topic,
     )
     archive_path.write_text(existing + "\n\n" + tombstone + "\n", encoding="utf-8")
 
