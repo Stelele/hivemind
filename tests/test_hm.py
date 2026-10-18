@@ -94,6 +94,18 @@ class HmTestCase(unittest.TestCase):
         )
         return proc.stdout.strip()
 
+    def add_remote(self, name="mirror"):
+        path = Path(self.tmp) / f"{name}.git"
+        git("init", "--bare", str(path), cwd=self.tmp)
+        git("remote", "add", name, str(path), cwd=self.board)
+        return path
+
+    def reject_pushes_to(self, path):
+        hook = Path(path) / "hooks" / "pre-receive"
+        hook.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+        hook.chmod(0o755)
+        return hook
+
     def is_ancestor(self, ancestor, descendant):
         return (
             subprocess.run(
@@ -546,6 +558,71 @@ class HmTestCase(unittest.TestCase):
         self.assertEqual(meta["endorsements"], "1")
         refs = git("ls-remote", "--heads", "origin", cwd=self.board).stdout
         self.assertIn(f"refs/heads/{self.checkout_branch}", refs)
+
+    def test_push_failure_names_the_remote_it_actually_used(self):
+        mirror = self.add_remote("mirror")
+        self.reject_pushes_to(mirror)
+
+        code, _, err = self.run_cli(
+            "post", "--title", "Wrong remote named", "--kind", "lesson",
+            "--topics", "stack", "--projects", "proj-a", "--remote", "mirror",
+        )
+
+        self.assertEqual(code, 2, err)
+        self.assertIn("mirror", err)
+        self.assertNotIn("git pull --rebase origin ", err)
+
+    def test_stale_default_branch_symref_cannot_unprotect_main(self):
+        # simulate a remote whose default branch was renamed: the symref is stale
+        git("branch", "trunk", cwd=self.board)
+        git("push", "origin", "trunk", cwd=self.board)
+        git("remote", "set-head", "origin", "trunk", cwd=self.board)
+        git("update-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/trunk", cwd=self.board)
+        git("checkout", "main", cwd=self.board)
+
+        code, _, err = self.run_cli(
+            "post", "--title", "Stale symref probe", "--kind", "lesson",
+            "--topics", "stack", "--projects", "proj-a",
+        )
+
+        self.assertEqual(code, 4, err)
+        self.assertIn("main", err)
+
+    def test_endorse_leaves_an_existing_upstream_alone(self):
+        # a branch deliberately tracking a mirror rather than origin
+        mirror = self.add_remote("mirror")
+        pid = "20261006-1300-delta-change"
+        self.add_post(pid, topics=["stack"], status="stream", endorsements=0)
+        self.commit_all()
+        git("config", f"branch.{self.checkout_branch}.remote", "mirror", cwd=self.board)
+        git("config",
+            f"branch.{self.checkout_branch}.merge",
+            f"refs/heads/{self.checkout_branch}", cwd=self.board)
+        git("push", "mirror", self.checkout_branch, cwd=self.board)
+
+        code, _, err = self.run_cli("endorse", pid)
+
+        self.assertEqual(code, 0, err)
+        self.assertEqual(
+            self.config_get(f"branch.{self.checkout_branch}.remote"), "mirror",
+            "hm silently retargeted an upstream the user had already chosen",
+        )
+        mirror_heads = git("ls-remote", "--heads", "mirror", cwd=self.board).stdout
+        self.assertIn(f"refs/heads/{self.checkout_branch}", mirror_heads)
+
+    def test_rollback_message_does_not_advise_pushing_a_discarded_commit(self):
+        self.seed_queued_post("20261006-1400-epsilon-change")
+        self.reject_pushes()
+
+        code, out, err = self.run_cli("ratify", "--all")
+
+        self.assertEqual(code, 3, err)
+        self.assertIn("rolled back", err)
+        self.assertIn("push", err.lower())
+        self.assertNotIn(
+            "git pull --rebase", err,
+            "the rollback discarded the commit the message tells you to push",
+        )
 
 
 class AdrSectionMappingTest(unittest.TestCase):

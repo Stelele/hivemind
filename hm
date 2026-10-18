@@ -183,7 +183,7 @@ def next_adr_number() -> int:
     return highest + 1
 
 
-def run_git(*args, cwd=None) -> subprocess.CompletedProcess:
+def run_git(*args, cwd=None, check=True) -> subprocess.CompletedProcess:
     proc = subprocess.run(
         ["git", *args],
         cwd=str(cwd) if cwd else str(board_path()),
@@ -193,6 +193,8 @@ def run_git(*args, cwd=None) -> subprocess.CompletedProcess:
     if proc.returncode != 0:
         detail = (proc.stderr or proc.stdout or "").strip()
         head = f"git {' '.join(args)} failed"
+        if not check:
+            return proc
         raise GitError(f"{head}: {detail}" if detail else head)
     return proc
 
@@ -201,7 +203,7 @@ def _current_branch() -> str:
     return run_git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
 
 
-def push_or_stop() -> None:
+def push_or_stop(remote: str = DEFAULT_REMOTE) -> None:
     """Push the current branch. Never rebase on the user's behalf.
 
     A rejected push is reported, never papered over: silently rebasing rewrites
@@ -216,7 +218,7 @@ def push_or_stop() -> None:
             f"{exc}\n"
             f"Nothing was rebased and nothing was discarded — the commit is local to "
             f"'{branch}'. To publish it, rebase deliberately and push again:\n"
-            f"  git pull --rebase origin {branch} && git push",
+            f"  git pull --rebase {remote} {branch} && git push",
             code=2,
         )
 
@@ -296,7 +298,14 @@ def _read_body(arg) -> str:
 
 
 def _set_upstream(remote: str) -> None:
+    """Track the same-named remote branch, but only if nothing is tracked yet.
+
+    Overwriting an existing upstream would silently retarget a branch the user
+    pointed at a different remote branch on purpose.
+    """
     branch = _current_branch()
+    if run_git("config", "--get", f"branch.{branch}.merge", check=False).stdout.strip():
+        return
     run_git("config", f"branch.{branch}.remote", remote)
     run_git("config", f"branch.{branch}.merge", f"refs/heads/{branch}")
 
@@ -320,8 +329,13 @@ def _require_feature_branch(remote: str, action: str) -> str:
     branch = _current_branch()
     if branch in ("", "HEAD"):
         die(f"cannot {action} from a detached HEAD; check out a branch first", code=4)
+    # refs/remotes/<remote>/HEAD goes stale when a remote renames its default
+    # branch, and git fetch never refreshes it. Union the detected default with
+    # the fallback names so a stale symref can only add protection.
+    protected = set(PROTECTED_FALLBACK)
     default = _remote_default_branch(remote)
-    protected = {default} if default else set(PROTECTED_FALLBACK)
+    if default:
+        protected.add(default)
     if branch in protected:
         die(
             f"'{branch}' is the default branch and is protected — cannot {action} "
@@ -458,7 +472,7 @@ def cmd_post(args) -> None:
     run_git("add", "--", str(path))
     run_git("commit", "-m", f"post: {args.title}")
     _set_upstream(args.remote)
-    push_or_stop()
+    push_or_stop(args.remote)
     emit(f"posted {pid}")
 
 
@@ -626,7 +640,9 @@ def _ratify_apply(resolved: list, tmp: Path) -> None:
     run_git("add", "-A")
     run_git("commit", "-m", f"ratify: {len(resolved)} post(s)")
     _set_upstream(DEFAULT_REMOTE)
-    push_or_stop()
+    # deliberately not push_or_stop: the rollback below discards this commit, so
+    # the handler must report the push failure, not advise pushing it again.
+    run_git("push")
 
 
 def _rollback(sha: str, tmp: Path) -> None:
@@ -654,15 +670,16 @@ def cmd_ratify(args) -> None:
     try:
         tmp.mkdir(parents=True, exist_ok=True)
         _ratify_apply(resolved, tmp)
-    except (Exception, SystemExit):
-        # SystemExit is a BaseException, not an Exception: die() inside push_or_stop
+    except (Exception, SystemExit) as exc:
+        # SystemExit is a BaseException, not an Exception: die() from dump_post
         # would otherwise escape and leave core/ rewritten but unpublished.
+        reason = str(exc).strip() or "the ratification could not be completed"
         detail = ""
         try:
             _rollback(sha, tmp)
-        except Exception as exc:
-            detail = f" (rollback error: {exc})"
-        die(f"ratification rolled back to {sha}; core untouched{detail}", code=3)
+        except Exception as rollback_exc:
+            detail = f" (rollback error: {rollback_exc})"
+        die(f"ratification rolled back to {sha}; core untouched: {reason}{detail}", code=3)
     emit(f"ratified {len(resolved)} post(s) into core/")
 
 
