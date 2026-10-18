@@ -683,6 +683,142 @@ def cmd_ratify(args) -> None:
     emit(f"ratified {len(resolved)} post(s) into core/")
 
 
+def _anchor(heading: str) -> str:
+    """The GitHub-style fragment for a heading: lowercase, non-alphanumerics to hyphens."""
+    return re.sub(r"[^a-z0-9]+", "-", heading.lower()).strip("-")
+
+
+def _section_end(lines: list, start: int) -> int:
+    for index in range(start + 1, len(lines)):
+        if lines[index].startswith("## "):
+            return index
+    return len(lines)
+
+
+def _find_core_section(path: Path, slug: str):
+    """Locate a `## ` section by either slug form. Returns (lines, start, end) or None."""
+    if not path.is_file():
+        return None
+    lines = path.read_text(encoding="utf-8").split("\n")
+    for index, line in enumerate(lines):
+        if not line.startswith("## "):
+            continue
+        heading = line[3:].strip()
+        if slug in (_anchor(heading), _slug(heading)):
+            return lines, index, _section_end(lines, index), heading
+    return None
+
+
+def _find_adr(number: str):
+    if not re.match(r"^\d{3,4}$", number):
+        return None
+    matches = sorted((board_path() / "decisions").glob(f"{number}-*.md"))
+    return matches[0] if matches else None
+
+
+def _archive_body(heading: str, section: list, adr_name: str, note, date_str: str) -> str:
+    body = "\n".join(section[1:]).strip("\n")
+    lines = [f"## {heading}", ""]
+    lines.append(
+        f"**Withdrawn** {date_str} by [ADR {adr_name}](../decisions/{adr_name})."
+    )
+    if note:
+        lines.append("")
+        lines.append(note.strip())
+    if body:
+        lines.extend(["", body])
+    return "\n".join(lines)
+
+
+def _renumber_list(lines: list, hole: int) -> list:
+    """Renumber the contiguous `N. ` block that used to contain `lines[hole]`."""
+    if hole > len(lines):
+        hole = len(lines)
+    start = hole
+    while start > 0 and re.match(r"^\d+\. ", lines[start - 1]):
+        start -= 1
+    end = hole
+    while end < len(lines) and re.match(r"^\d+\. ", lines[end]):
+        end += 1
+    for offset, index in enumerate(range(start, end), start=1):
+        lines[index] = re.sub(r"^\d+\. ", f"{offset}. ", lines[index])
+    return lines
+
+
+def _drop_index_bullet(path: Path, slugs: set) -> None:
+    if not path.is_file():
+        return
+    lines = path.read_text(encoding="utf-8").split("\n")
+    for index, line in enumerate(lines):
+        if not any(f"#{slug})" in line for slug in slugs):
+            continue
+        del lines[index]
+        lines = _renumber_list(lines, index)
+        break
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _supersede_apply(topic: str, slug: str, adr_path: Path, note) -> None:
+    core_path = board_path() / "core" / f"{topic}.md"
+    found = _find_core_section(core_path, slug)
+    if found is None:
+        die(f"no section in core/{topic}.md matches '{slug}'; nothing changed")
+    lines, start, end, heading = found
+    section = lines[start:end]
+    del lines[start:end]
+    text = re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).rstrip("\n")
+    core_path.write_text(text + "\n", encoding="utf-8")
+
+    archive_path = board_path() / "archive" / f"{topic}.md"
+    archive_path.parent.mkdir(parents=True, exist_ok=True)
+    if not archive_path.is_file():
+        archive_path.write_text(
+            "<!-- Superseded rules, kept for the record. core/ holds only live rules. -->\n",
+            encoding="utf-8",
+        )
+    existing = archive_path.read_text(encoding="utf-8").rstrip("\n")
+    tombstone = _archive_body(
+        heading, section, adr_path.name, note, datetime.now().strftime("%Y-%m-%d")
+    )
+    archive_path.write_text(existing + "\n\n" + tombstone + "\n", encoding="utf-8")
+
+    index_path = board_path() / "core" / "INDEX.md"
+    _drop_index_bullet(index_path, {_anchor(heading), _slug(heading)})
+
+
+def cmd_supersede(args) -> None:
+    _require_feature_branch(DEFAULT_REMOTE, "supersede")
+    if args.topic not in CORE_TOPICS:
+        die(f"--in must be one of {', '.join(CORE_TOPICS)}")
+    adr_path = _find_adr(args.adr)
+    if adr_path is None:
+        die(
+            f"no ADR {args.adr} in decisions/; a rule may only be superseded by a "
+            f"decision that is already recorded",
+        )
+    sha = run_git("rev-parse", "HEAD").stdout.strip()
+    tmp = board_path() / ".hivemind-tmp"
+    try:
+        tmp.mkdir(parents=True, exist_ok=True)
+        _supersede_apply(args.topic, args.slug, adr_path, args.note)
+        run_git("add", "-A")
+        run_git(
+            "commit",
+            "-m", f"supersede: {args.slug} (ADR {args.adr} in {args.topic}.md)",
+        )
+        _set_upstream(DEFAULT_REMOTE)
+        push_or_stop()
+    except (Exception, SystemExit) as exc:
+        reason = str(exc).strip() or "the supersession could not be completed"
+        detail = ""
+        try:
+            _rollback(sha, tmp)
+        except Exception as rollback_exc:
+            detail = f" (rollback error: {rollback_exc})"
+        die(f"supersede rolled back to {sha}; core untouched: {reason}{detail}", code=3)
+    emit(f"superseded {args.slug} from core/{args.topic}.md into archive/{args.topic}.md")
+
+
 def cmd_find(args) -> None:
     board = board_path()
     query = args.query.lower()
@@ -753,6 +889,18 @@ def build_parser() -> argparse.ArgumentParser:
     ratify.add_argument("--all", action="store_true")
     ratify.add_argument("--core-file", default=None)
     ratify.set_defaults(func=cmd_ratify)
+
+    supersede = sub.add_parser(
+        "supersede", help="move a withdrawn rule out of core/ into archive/"
+    )
+    supersede.add_argument("--slug", required=True, help="section slug in the core file")
+    supersede.add_argument("--in", dest="topic", required=True, help="core file name")
+    supersede.add_argument(
+        "--withdrawn-by", dest="adr", required=True,
+        help="ADR number of the decision that withdrew the rule",
+    )
+    supersede.add_argument("--note", default=None, help="one line on why")
+    supersede.set_defaults(func=cmd_supersede)
 
     find = sub.add_parser("find", help="search core/ and stream/")
     find.add_argument("query")
