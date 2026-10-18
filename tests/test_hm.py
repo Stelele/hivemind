@@ -624,6 +624,234 @@ class HmTestCase(unittest.TestCase):
             "the rollback discarded the commit the message tells you to push",
         )
 
+    CORE_FIXTURE = (
+        "# Workflow — git, commits, CI, verification\n"
+        "\n"
+        "## Never commit, push, or open a PR without an explicit instruction\n"
+        "\n"
+        "Ask before you write.\n"
+        "\n"
+        "  *Evidence: 2026-06-05.*\n"
+        "  → [ADR 0001](../decisions/0001-never-commit-without-an-explicit-instruction.md)\n"
+        "  *(superseded 2026-10-07 by ADR 0049)*\n"
+        "\n"
+        "## Batch the change, then test once\n"
+        "\n"
+        "Not per edit.\n"
+        "\n"
+        "### Not per edit\n"
+        "\n"
+        "The sub-heading belongs to its parent rule.\n"
+    )
+
+    INDEX_FIXTURE = (
+        "# Core — the always-read tier\n"
+        "\n"
+        "| If you are doing… | Read |\n"
+        "|---|---|\n"
+        "| tests, CI, deploys, commits, branches | `workflow.md` |\n"
+        "\n"
+        "## The five that matter most\n"
+        "\n"
+        "1. **Never commit, push, or open a PR without an explicit instruction.**"
+        " — [workflow](workflow.md#never-commit-push-or-open-a-pr-without-an-explicit-instruction)\n"
+        "2. **Make the change, then run the tests once.** Not per edit."
+        " — [workflow](workflow.md#batch-the-change-then-test-once)\n"
+    )
+
+    def seed_core(self, slug=None):
+        """A core/workflow.md with two rules, an index that links them, and one ADR."""
+        (self.board / "core" / "workflow.md").write_text(self.CORE_FIXTURE, encoding="utf-8")
+        (self.board / "core" / "INDEX.md").write_text(self.INDEX_FIXTURE, encoding="utf-8")
+        adr = self.board / "decisions" / "0052-agents-commit-freely.md"
+        adr.write_text("# 0052. Agents commit freely\n", encoding="utf-8")
+        self.commit_all()
+        return slug or "never-commit-push-or-open-a-pr-without-an-explicit-instruction"
+
+    def core_text(self, name="workflow"):
+        return (self.board / "core" / f"{name}.md").read_text(encoding="utf-8")
+
+    def archive_text(self, name="workflow"):
+        path = self.board / "archive" / f"{name}.md"
+        return path.read_text(encoding="utf-8") if path.is_file() else None
+
+    def test_supersede_removes_the_rule_from_core(self):
+        slug = self.seed_core()
+
+        code, out, err = self.run_cli(
+            "supersede", "--slug", slug, "--in", "workflow", "--withdrawn-by", "0052",
+        )
+
+        self.assertEqual(code, 0, err)
+        after = self.core_text()
+        self.assertNotIn("Never commit, push, or open a PR", after)
+        self.assertIn("## Batch the change, then test once", after)
+        self.assertIn("The sub-heading belongs to its parent rule.", after)
+        self.assertTrue(after.startswith("# Workflow"))
+
+    def test_supersede_archives_the_original_text_verbatim(self):
+        slug = self.seed_core()
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", slug, "--in", "workflow", "--withdrawn-by", "0052",
+        )
+
+        self.assertEqual(code, 0, err)
+        archived = self.archive_text()
+        self.assertIn("## Never commit, push, or open a PR without an explicit instruction", archived)
+        self.assertIn("Ask before you write.", archived)
+        self.assertIn("*(superseded 2026-10-07 by ADR 0049)*", archived)
+        self.assertIn("0052-agents-commit-freely.md", archived)
+        self.assertIn("Withdrawn", archived)
+
+    def test_supersede_records_a_note_when_given(self):
+        slug = self.seed_core()
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", slug, "--in", "workflow", "--withdrawn-by", "0052",
+            "--note", "ADR 0052 withdrew the agent-side half.",
+        )
+
+        self.assertEqual(code, 0, err)
+        self.assertIn("ADR 0052 withdrew the agent-side half.", self.archive_text())
+
+    def test_supersede_drops_the_stale_index_bullet(self):
+        slug = self.seed_core()
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", slug, "--in", "workflow", "--withdrawn-by", "0052",
+        )
+
+        self.assertEqual(code, 0, err)
+        index = (self.board / "core" / "INDEX.md").read_text(encoding="utf-8")
+        self.assertNotIn("without-an-explicit-instruction", index)
+        self.assertIn("#batch-the-change-then-test-once", index)
+
+    def test_supersede_renumbers_the_list_it_left_a_hole_in(self):
+        slug = self.seed_core()
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", slug, "--in", "workflow", "--withdrawn-by", "0052",
+        )
+
+        self.assertEqual(code, 0, err)
+        index = (self.board / "core" / "INDEX.md").read_text(encoding="utf-8")
+        # one bullet removed, so one remains — and it must be 1, not the 2 it was
+        numbers = re.findall(r"^(\d+)\. \*\*", index, flags=re.M)
+        self.assertEqual(numbers, ["1"], "the list kept its old numbering")
+        self.assertIn("Make the change", index)
+
+    def test_supersede_leaves_unrelated_numbered_lists_alone(self):
+        self.seed_core()
+        index_path = self.board / "core" / "INDEX.md"
+        index_path.write_text(
+            self.INDEX_FIXTURE
+            + "\n## Elsewhere\n\n1. one\n2. two\n3. three\n",
+            encoding="utf-8",
+        )
+        self.commit_all("fixture: extra list")
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", "never-commit-push-or-open-a-pr-without-an-explicit-instruction",
+            "--in", "workflow", "--withdrawn-by", "0052",
+        )
+
+        self.assertEqual(code, 0, err)
+        index = index_path.read_text(encoding="utf-8")
+        self.assertIn("\n1. one\n2. two\n3. three\n", index)
+
+    def test_supersede_accepts_the_truncated_slug_too(self):
+        heading = "Never commit, push, or open a PR without an explicit instruction"
+        self.seed_core()
+        truncated = hm._slug(heading)
+        self.assertNotEqual(truncated, hm._anchor(heading), "precondition: the two forms differ")
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", truncated,
+            "--in", "workflow", "--withdrawn-by", "0052",
+        )
+
+        self.assertEqual(code, 0, err)
+        self.assertNotIn("Never commit, push, or open a PR", self.core_text())
+
+    def test_supersede_unknown_slug_changes_nothing(self):
+        self.seed_core()
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", "no-such-rule", "--in", "workflow",
+            "--withdrawn-by", "0052",
+        )
+
+        self.assertNotEqual(code, 0)
+        self.assertIn("no-such-rule", err)
+        self.assertEqual(self.core_text(), self.CORE_FIXTURE)
+        self.assertIsNone(self.archive_text())
+        self.assertEqual(self.head_sha(), self.head_sha())
+
+    def test_supersede_requires_the_withdrawing_adr_to_exist(self):
+        slug = self.seed_core()
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", slug, "--in", "workflow", "--withdrawn-by", "0099",
+        )
+
+        self.assertNotEqual(code, 0)
+        self.assertIn("0099", err)
+        self.assertEqual(self.core_text(), self.CORE_FIXTURE)
+        self.assertIsNone(self.archive_text())
+        self.assertEqual(self.porcelain(), "")
+
+    def test_supersede_refuses_the_default_branch(self):
+        slug = self.seed_core()
+        git("checkout", "main", cwd=self.board)
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", slug, "--in", "workflow", "--withdrawn-by", "0052",
+        )
+
+        self.assertEqual(code, 4, err)
+        # core/workflow.md only ever existed on the feature branch
+        self.assertIsNone(self.archive_text())
+        self.assertEqual(self.porcelain(), "")
+        self.assertFalse((self.board / "archive").exists())
+
+    def test_supersede_rolls_back_when_push_is_rejected(self):
+        slug = self.seed_core()
+        before_head = self.head_sha()
+        before_index = (self.board / "core" / "INDEX.md").read_bytes()
+        self.reject_pushes()
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", slug, "--in", "workflow", "--withdrawn-by", "0052",
+        )
+
+        self.assertEqual(code, 3, err)
+        self.assertIn("rolled back", err)
+        self.assertEqual(self.core_text(), self.CORE_FIXTURE)
+        self.assertIsNone(self.archive_text())
+        self.assertEqual(
+            (self.board / "core" / "INDEX.md").read_bytes(), before_index
+        )
+        self.assertEqual(self.head_sha(), before_head)
+        self.assertEqual(self.porcelain(), "")
+
+    def test_supersede_persists_both_files_and_pushes(self):
+        slug = self.seed_core()
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", slug, "--in", "workflow", "--withdrawn-by", "0052",
+        )
+
+        self.assertEqual(code, 0, err)
+        self.assertEqual(self.porcelain(), "")
+        message = git("log", "-1", "--format=%s", cwd=self.board).stdout.strip()
+        self.assertIn("supersede", message)
+        self.assertIn("0052", message)
+        pushed = git("show", "--stat", "--name-only", "HEAD", cwd=self.board).stdout
+        self.assertIn("core/workflow.md", pushed)
+        self.assertIn("core/INDEX.md", pushed)
+        self.assertIn("archive/workflow.md", pushed)
+
 
 class AdrSectionMappingTest(unittest.TestCase):
     def test_post_sections_map_into_adr(self):
