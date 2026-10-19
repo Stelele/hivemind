@@ -825,6 +825,84 @@ class HmTestCase(unittest.TestCase):
         index = index_path.read_text(encoding="utf-8")
         self.assertIn("\n1. one\n2. two\n3. three\n", index)
 
+    FIVE_FIXTURE = (
+        "# Core\n\n## The five that matter most\n\nProse.\n\n"
+        "1. **Never commit.** — [workflow](workflow.md#never-commit)\n"
+        "2. **Test once.** — [workflow](workflow.md#test-once)\n"
+        "3. **Read the docs.** — [architecture](architecture.md#read-the-docs)\n"
+        "4. **Show reasoning.** — [communication](communication.md#show-reasoning)\n"
+        "5. **Simplicity first.** — [architecture](architecture.md#simplicity-first)\n"
+    )
+
+    def seed_five(self):
+        (self.board / "core" / "workflow.md").write_text(
+            "# Workflow\n\n## Never commit\n\nbody\n\n## Test once\n\nbody\n"
+            "## Read the docs\n\nbody\n\n## Show reasoning\n\nbody\n"
+            "## Simplicity first\n\nbody\n",
+            encoding="utf-8",
+        )
+        (self.board / "core" / "architecture.md").write_text(
+            "# Architecture\n\n## Read the docs\n\nbody\n\n## Simplicity first\n\nbody\n",
+            encoding="utf-8",
+        )
+        (self.board / "core" / "communication.md").write_text(
+            "# Communication\n\n## Show reasoning\n\nbody\n", encoding="utf-8"
+        )
+        (self.board / "core" / "INDEX.md").write_text(self.FIVE_FIXTURE, encoding="utf-8")
+        (self.board / "decisions" / "0052-x.md").write_text("# 0052\n", encoding="utf-8")
+        self.commit_all()
+
+    def test_supersede_fixes_a_count_the_removal_invalidated(self):
+        self.seed_five()
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", "never-commit", "--in", "workflow",
+            "--withdrawn-by", "0052",
+        )
+
+        self.assertEqual(code, 0, err)
+        index = (self.board / "core" / "INDEX.md").read_text(encoding="utf-8")
+        self.assertIn("## The four that matter most", index)
+        self.assertNotIn("## The five that matter most", index)
+        self.assertEqual(re.findall(r"^(\d+)\. \*\*", index, flags=re.M),
+                         ["1", "2", "3", "4"])
+
+    def test_supersede_leaves_a_count_it_did_not_invalidate(self):
+        self.seed_five()
+        index_path = self.board / "core" / "INDEX.md"
+        index_path.write_text(
+            self.FIVE_FIXTURE.replace("## The five", "## The three"), encoding="utf-8"
+        )
+        self.commit_all("fixture: wrong count already")
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", "never-commit", "--in", "workflow",
+            "--withdrawn-by", "0052",
+        )
+
+        self.assertEqual(code, 0, err)
+        self.assertIn(
+            "## The three that matter most",
+            index_path.read_text(encoding="utf-8"),
+            "rewrote a count this operation did not invalidate",
+        )
+
+    def test_supersede_fixes_a_digit_count_too(self):
+        self.seed_five()
+        index_path = self.board / "core" / "INDEX.md"
+        index_path.write_text(
+            self.FIVE_FIXTURE.replace("## The five", "## Top 5"), encoding="utf-8"
+        )
+        self.commit_all("fixture: digit count")
+
+        code, _, err = self.run_cli(
+            "supersede", "--slug", "never-commit", "--in", "workflow",
+            "--withdrawn-by", "0052",
+        )
+
+        self.assertEqual(code, 0, err)
+        self.assertIn("## Top 4", index_path.read_text(encoding="utf-8"))
+
     def test_supersede_accepts_the_truncated_slug_too(self):
         heading = "Never commit, push, or open a PR without an explicit instruction"
         self.seed_core()
