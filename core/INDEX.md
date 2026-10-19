@@ -24,12 +24,11 @@ If a rule here conflicts with a project's own conventions, that is a bug — ope
 
 ---
 
-## The five that matter most
+## The four that matter most
 
 If you read nothing else, read these. They are the ones that get violated most:
 
-1. **Never commit, push, or open a PR without an explicit instruction.** — [workflow](workflow.md#never-commit-push-or-open-a-pr-without-an-explicit-instruction)
-2. **Make the change, then run the tests once.** Not per edit. — [workflow](workflow.md#batch-the-change-then-test-once)
-3. **Check the real docs before implementing.** Do not work from recollection. — [architecture](architecture.md#verify-against-real-documentation-before-implementing)
-4. **Show the reasoning and the instructions, not just the diff.** — [communication](communication.md#show-the-instructions-and-the-reasoning-not-just-the-diff)
-5. **Simplicity outranks resilience when the volume does not justify it.** — [architecture](architecture.md#simplicity-outranks-resilience-when-volume-does-not-justify-it)
+1. **Make the change, then run the tests once.** Not per edit. — [workflow](workflow.md#batch-the-change-then-test-once)
+2. **Check the real docs before implementing.** Do not work from recollection. — [architecture](architecture.md#verify-against-real-documentation-before-implementing)
+3. **Show the reasoning and the instructions, not just the diff.** — [communication](communication.md#show-the-instructions-and-the-reasoning-not-just-the-diff)
+4. **Simplicity outranks resilience when the volume does not justify it.** — [architecture](architecture.md#simplicity-outranks-resilience-when-volume-does-not-justify-it)
