@@ -717,12 +717,17 @@ def _find_adr(number: str):
 
 
 def _core_anchors(path: Path) -> set:
+    """Every heading anchor still living in the core file, at any depth.
+
+    A withdrawn section can link to a `###` inside a section that survived, so
+    subheadings count too — GitHub resolves `#anchor` against any heading level.
+    """
     if not path.is_file():
         return set()
     anchors = set()
     for line in path.read_text(encoding="utf-8").split("\n"):
-        if line.startswith("## "):
-            anchors.add(_anchor(line[3:].strip()))
+        if re.match(r"^#{1,6} ", line):
+            anchors.add(_anchor(re.sub(r"^#{1,6} ", "", line).strip()))
     return anchors
 
 
@@ -762,8 +767,16 @@ NUMBER_WORDS = (
     "six", "seven", "eight", "nine", "ten",
 )
 _COUNT_RE = re.compile(
-    r"\b(\d+|" + "|".join(NUMBER_WORDS) + r")\b"
+    r"\b(\d+|" + "|".join(NUMBER_WORDS) + r")\b", re.IGNORECASE
 )
+
+
+def _match_case(sample: str, word: str) -> str:
+    if sample.isupper():
+        return word.upper()
+    if sample[:1].isupper():
+        return word.capitalize()
+    return word
 
 
 def _retitle_count(lines: list, list_start: int, was: int, now: int) -> None:
@@ -781,13 +794,14 @@ def _retitle_count(lines: list, list_start: int, was: int, now: int) -> None:
         if not match:
             return
         token = match.group(1)
-        value = int(token) if token.isdigit() else NUMBER_WORDS.index(token)
+        lowered = token.lower()
+        value = int(lowered) if lowered.isdigit() else NUMBER_WORDS.index(lowered)
         if value != was:
             return
-        if token.isdigit():
+        if lowered.isdigit():
             replacement = str(now)
         elif now < len(NUMBER_WORDS):
-            replacement = NUMBER_WORDS[now]
+            replacement = _match_case(token, NUMBER_WORDS[now])
         else:
             return
         lines[index] = lines[index][: match.start(1)] + replacement + lines[index][match.end(1):]
