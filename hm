@@ -757,16 +757,56 @@ def _archive_body(heading: str, section: list, adr_name: str, note, date_str: st
     return "\n".join(lines)
 
 
-def _renumber_list(lines: list, hole: int) -> list:
-    """Renumber the contiguous `N. ` block that used to contain `lines[hole]`."""
-    if hole > len(lines):
-        hole = len(lines)
+NUMBER_WORDS = (
+    "zero", "one", "two", "three", "four", "five",
+    "six", "seven", "eight", "nine", "ten",
+)
+_COUNT_RE = re.compile(
+    r"\b(\d+|" + "|".join(NUMBER_WORDS) + r")\b"
+)
+
+
+def _retitle_count(lines: list, list_start: int, was: int, now: int) -> None:
+    """Fix a heading whose count this removal invalidated, and nothing else.
+
+    Removing a bullet can leave "The five that matter most" heading a list of
+    four. That heading is only ours to rewrite when its count matched the list
+    before the removal; a heading that was already wrong stays wrong rather than
+    being silently corrected by an unrelated operation.
+    """
+    for index in range(list_start - 1, -1, -1):
+        if not lines[index].startswith("## "):
+            continue
+        match = _COUNT_RE.search(lines[index])
+        if not match:
+            return
+        token = match.group(1)
+        value = int(token) if token.isdigit() else NUMBER_WORDS.index(token)
+        if value != was:
+            return
+        if token.isdigit():
+            replacement = str(now)
+        elif now < len(NUMBER_WORDS):
+            replacement = NUMBER_WORDS[now]
+        else:
+            return
+        lines[index] = lines[index][: match.start(1)] + replacement + lines[index][match.end(1):]
+        return
+
+
+def _list_block(lines: list, hole: int) -> tuple:
     start = hole
     while start > 0 and re.match(r"^\d+\. ", lines[start - 1]):
         start -= 1
     end = hole
     while end < len(lines) and re.match(r"^\d+\. ", lines[end]):
         end += 1
+    return start, end
+
+
+def _renumber_list(lines: list, hole: int) -> list:
+    """Renumber the contiguous `N. ` block that used to contain `lines[hole]`."""
+    start, end = _list_block(lines, hole)
     for offset, index in enumerate(range(start, end), start=1):
         lines[index] = re.sub(r"^\d+\. ", f"{offset}. ", lines[index])
     return lines
@@ -779,6 +819,8 @@ def _drop_index_bullet(path: Path, slugs: set) -> None:
     for index, line in enumerate(lines):
         if not any(f"#{slug})" in line for slug in slugs):
             continue
+        start, end = _list_block(lines, index)
+        _retitle_count(lines, start, end - start, end - start - 1)
         del lines[index]
         lines = _renumber_list(lines, index)
         break
