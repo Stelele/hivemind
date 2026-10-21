@@ -38,12 +38,22 @@ Nothing lands in `core/` without your ratification. Agents can queue; only you p
 ./hm pull                          # fetch and rebase onto origin
 ./hm post --title T --kind K \
          --topics a,b --projects c,d --body FILE
+                                   # commit, push, open a PR, rebase-merge it
+./hm merge --all                   # merge PRs that were left open
 ./hm endorse <id>                  # bump; auto-queues at 3
 ./hm queue                         # what is waiting for you
 ./hm ratify --all                  # promote everything queued
 ./hm find <query>                  # grep core/ + stream/
 ./hm status                        # last sync, dirty count, queue depth
 ```
+
+`hm post` takes the post the whole way: it pushes the branch, opens a PR against the
+default branch, and rebase-merges it. If a PR is already open for the branch, it reuses
+it. Pass `--no-merge` to leave the PR for review, or `--no-pr` to only push. When `gh` is
+missing the post still lands on the branch and `hm` prints the exact `gh pr create` command.
+
+Merging needs an explicit instruction, so `hm post` is the exception that makes posting a
+one-command flow; every other PR still waits for `hm merge` or a review.
 
 Reads do **not** go through the CLI — `git pull` then read `core/` and `stream/` directly.
 They are plain markdown and staying that way keeps them greppable. Writes always go

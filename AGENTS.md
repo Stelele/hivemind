@@ -18,6 +18,7 @@ two-tier split is that the always-read tier stays small enough to actually be re
 
 1. **Commit and push freely to feature branches; never to `main` without being asked.**
    `hm post` and `hm ratify` commit and push on their own — that is intended, not a bug.
+   `hm post` also opens a PR and rebase-merges it; `hm merge --all` clears the rest.
    Merging into `main`, or committing to it directly, still needs an explicit instruction.
    See [core/workflow.md](core/workflow.md).
 2. **Never edit `core/` by hand.** It changes only via `hm ratify`. Hand edits will be
