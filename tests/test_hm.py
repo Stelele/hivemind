@@ -763,6 +763,21 @@ sys.exit(0)
         self.assertIn("hm merge 7", out)
         self.assertEqual(self.current_branch(), "feat/unrelated-work")
 
+    def test_post_targets_the_remote_default_branch_when_the_symref_is_stale(self):
+        # remote's real default is trunk, but the local origin/HEAD still says main
+        git("branch", "trunk", cwd=self.board)
+        git("push", "origin", "trunk", cwd=self.board)
+        git("symbolic-ref", "HEAD", "refs/heads/trunk", cwd=self.origin)
+        git("update-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main", cwd=self.board)
+        self.install_fake_gh()
+
+        code, _, err = self.run_cli(*self.post_args())
+
+        self.assertEqual(code, 0, err)
+        create = [call for call in self.gh_calls() if call.startswith("pr create")]
+        self.assertTrue(create, self.gh_calls())
+        self.assertIn("--base trunk", create[0])
+
     def test_endorse_leaves_an_existing_upstream_alone(self):
         # a branch deliberately tracking a mirror rather than origin
         mirror = self.add_remote("mirror")

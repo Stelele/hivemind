@@ -360,6 +360,11 @@ def _gh(*args) -> subprocess.CompletedProcess:
 
 
 def _default_branch(remote: str) -> str:
+    # refs/remotes/<remote>/HEAD goes stale when the remote renames its default,
+    # and git fetch never refreshes it. Ask the remote when it is reachable; stay
+    # on the offline fallback when it is not, so posting works on a plane.
+    run_git("fetch", "--quiet", remote, check=False)
+    run_git("remote", "set-head", remote, "--auto", check=False)
     return _remote_default_branch(remote) or PROTECTED_FALLBACK[0]
 
 
