@@ -27,13 +27,14 @@ await db.transaction('rw', db.outbox, async () => { /* read, then write */ })
 ```
 
 A readwrite transaction needs exclusive use of its object store. **IndexedDB
-grants that to whichever writer reaches it first — no fairness, no queue, no
-timeout.** The sync engine ran in a Web Worker on the same origin, so it was a
-second writer on the same store. A save that overlapped its writes was shut out.
+queues overlapping transactions in creation order: an earlier transaction holds
+the store until it finishes, and a later one waits behind it — no timeout.** The
+sync engine ran in a Web Worker on the same origin, so it was a second writer on
+the same store. A save that overlapped its writes waited behind it.
 
-Shut out is the important word. It is not slow. The promise **never settled**. It
-did eventually complete — given up to 45 seconds — which is exactly why it looked
-like a flake instead of a hang.
+Waiting is the important word. It is not slow. The promise did not settle for up
+to 45 seconds, then completed — which is why it looked like a flake instead of a
+hang.
 
 ```
 VIEW save begin
@@ -61,6 +62,13 @@ function oneAtATime<T>(recordId: string, work: () => Promise<T>): Promise<T> {
 }
 ```
 
+**The chain is per context.** `chains` is an in-memory map, and a page and a
+worker do not share one. This orders writers inside a single context; it does
+not make a page write and a worker write atomic. If both can write the same
+record, route both through one coordinator (usually the worker) or keep the
+read-modify-write inside a single IndexedDB transaction. The chain orders work;
+it does not provide atomicity across contexts.
+
 Also: a run requested *during* a run is remembered and honoured at the end,
 never dropped. Per-record rather than global, so one slow record cannot hold up
 another.
@@ -70,10 +78,10 @@ with the write measured at 5–18ms.
 
 ## The rules
 
-- **Reach for a transaction only when you need rollback or cross-store
-  atomicity.** Ordering within a record is a promise chain, and a chain cannot
-  be starved.
-- **A promise that never settles is not "slow".** If a write matters, time it.
+- **Reach for a transaction only when you need rollback, cross-store atomicity,
+  or ordering across contexts.** Ordering within one context is a promise chain,
+  and a chain cannot be starved.
+- **A promise that stalls is not "slow".** If a write matters, time it.
   Anything over ~100ms deserves a log line saying which store and how long.
 - **A background worker on the same origin is a second writer.** Say so in the
   comment next to the transaction, because the next person will add one.
