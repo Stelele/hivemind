@@ -49,7 +49,11 @@ violating a path that had never once run successfully).
 ## The costs
 
 - Per-line commits mean more, smaller transactions on a bulk apply — hundreds
-  instead of a few chunks; negligible at these sizes.
+  instead of a few chunks. **Deployment-specific**: the basis is a local SQLite
+  file where a single-row save is sub-millisecond, and the two production-shape
+  confirms each finished well under a second. That is *not* a networked or
+  remote-database claim — there the round-trips count and per-line commits need
+  measuring before they are believed.
 - Three-state outcome shapes are one more field to thread through API, types
   and copy; a message tree instead of a single template string.
 
