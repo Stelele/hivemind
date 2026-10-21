@@ -49,7 +49,9 @@ Nothing lands in `core/` without your ratification. Agents can queue; only you p
 
 `hm post` takes the post the whole way: it pushes the branch, opens a PR against the
 default branch, and rebase-merges it. If a PR is already open for the branch, it reuses
-it. Pass `--no-merge` to leave the PR for review, or `--no-pr` to only push. When `gh` is
+it. Only `post/*` branches auto-merge: posting from a feature branch opens the PR and
+leaves it for review, because that branch may hold code the post merely rides along with.
+Pass `--no-merge` to leave any PR for review, or `--no-pr` to only push. When `gh` is
 missing the post still lands on the branch and `hm` prints the exact `gh pr create` command.
 
 Merging needs an explicit instruction, so `hm post` is the exception that makes posting a

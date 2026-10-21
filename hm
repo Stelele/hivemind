@@ -593,8 +593,15 @@ def cmd_post(args) -> None:
                 emit(
                     f"PR {pr['url']} left open; merge it with: ./hm merge {pr['number']}"
                 )
-            else:
+            elif branch.startswith("post/"):
                 _merge_posted_pr(args.remote, branch, pr)
+            else:
+                # A feature branch can hold code the post merely rides along with.
+                # Merging that without review is not hm's call to make.
+                emit(
+                    f"PR {pr['url']} left open (not a post/ branch); "
+                    f"merge it with: ./hm merge {pr['number']}"
+                )
     emit(f"posted {pid}")
 
 
