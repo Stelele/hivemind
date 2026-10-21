@@ -1,6 +1,7 @@
 import contextlib
 import importlib.util
 import io
+import json
 import os
 import re
 import shutil
@@ -8,6 +9,7 @@ import subprocess
 import tempfile
 import unittest
 from datetime import datetime
+from unittest import mock
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
 
@@ -59,6 +61,8 @@ class HmTestCase(unittest.TestCase):
 
     def tearDown(self):
         os.environ.pop("HIVEMIND_BOARD", None)
+        if hasattr(self, "_saved_path"):
+            os.environ["PATH"] = self._saved_path
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def checkout_feature_branch(self, name="post/board-fixture"):
@@ -124,6 +128,51 @@ class HmTestCase(unittest.TestCase):
         git("commit", "-m", message, cwd=other)
         git("push", "origin", "main", cwd=other)
         return git("rev-parse", "HEAD", cwd=other).stdout.strip()
+
+    def install_fake_gh(self, existing_pr=None, create_number=7, merge_fail=(), list_prs=None):
+        """Put a fake `gh` on PATH that records its argv and behaves predictably."""
+        bindir = Path(self.tmp) / "fake-bin"
+        bindir.mkdir(exist_ok=True)
+        self.gh_log = Path(self.tmp) / "gh.log"
+        self.gh_log.write_text("", encoding="utf-8")
+        script = f'''#!/usr/bin/env python3
+import json, sys
+args = sys.argv[1:]
+with open({str(self.gh_log)!r}, "a", encoding="utf-8") as log:
+    log.write(" ".join(args) + "\\n")
+if args[:2] == ["pr", "view"]:
+    existing = {existing_pr!r}
+    if existing:
+        print(json.dumps(existing))
+        sys.exit(0)
+    sys.exit(1)
+if args[:2] == ["pr", "create"]:
+    print("https://github.com/example/board/pull/{create_number}")
+    sys.exit(0)
+if args[:2] == ["pr", "merge"]:
+    target = args[2] if len(args) > 2 else ""
+    sys.exit(1 if target in {set(map(str, merge_fail))!r} else 0)
+if args[:2] == ["pr", "list"]:
+    print(json.dumps({list_prs or []!r}))
+    sys.exit(0)
+sys.exit(0)
+'''
+        path = bindir / "gh"
+        path.write_text(script, encoding="utf-8")
+        path.chmod(0o755)
+        self._saved_path = os.environ.get("PATH", "")
+        os.environ["PATH"] = str(bindir) + os.pathsep + self._saved_path
+        return path
+
+    def gh_calls(self):
+        return [
+            line
+            for line in self.gh_log.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+
+    def current_branch(self):
+        return git("rev-parse", "--abbrev-ref", "HEAD", cwd=self.board).stdout.strip()
 
     def run_cli(self, *args):
         out = io.StringIO()
@@ -587,6 +636,118 @@ class HmTestCase(unittest.TestCase):
 
         self.assertEqual(code, 4, err)
         self.assertIn("main", err)
+
+    def post_args(self, **overrides):
+        args = [
+            "post", "--title", overrides.pop("title", "Auto merge me"),
+            "--kind", "lesson", "--topics", "stack", "--projects", "proj-a",
+        ]
+        for key, value in overrides.items():
+            args.extend([f"--{key.replace('_', '-')}", value])
+        return args
+
+    def test_post_opens_a_pr_and_merges_it(self):
+        self.install_fake_gh()
+
+        code, out, err = self.run_cli(*self.post_args())
+
+        self.assertEqual(code, 0, err)
+        calls = self.gh_calls()
+        self.assertIn(
+            "pr create --base main --head post/board-fixture "
+            "--title post: Auto merge me",
+            " ".join(calls),
+        )
+        self.assertTrue(
+            any(call.startswith("pr merge 7 --rebase") for call in calls), calls
+        )
+        self.assertIn("merged PR #7", out)
+        self.assertEqual(self.current_branch(), "main")
+
+    def test_post_reuses_an_open_pr_instead_of_opening_a_duplicate(self):
+        self.install_fake_gh(
+            existing_pr={
+                "number": 9,
+                "url": "https://github.com/example/board/pull/9",
+                "state": "OPEN",
+            }
+        )
+
+        code, out, err = self.run_cli(*self.post_args())
+
+        self.assertEqual(code, 0, err)
+        calls = self.gh_calls()
+        self.assertFalse(any(call.startswith("pr create") for call in calls), calls)
+        self.assertTrue(any(call.startswith("pr merge 9") for call in calls), calls)
+        self.assertIn("https://github.com/example/board/pull/9", out)
+
+    def test_post_no_merge_leaves_the_pr_open(self):
+        self.install_fake_gh()
+
+        code, out, err = self.run_cli(*self.post_args(), "--no-merge")
+
+        self.assertEqual(code, 0, err)
+        calls = self.gh_calls()
+        self.assertTrue(any(call.startswith("pr create") for call in calls), calls)
+        self.assertFalse(any(call.startswith("pr merge") for call in calls), calls)
+        self.assertIn("hm merge 7", out)
+        self.assertEqual(self.current_branch(), self.checkout_branch)
+
+    def test_post_no_pr_keeps_the_old_push_only_path(self):
+        self.install_fake_gh()
+
+        code, out, err = self.run_cli(*self.post_args(), "--no-pr")
+
+        self.assertEqual(code, 0, err)
+        self.assertEqual(self.gh_calls(), [])
+        self.assertIn("posted", out)
+        self.assertEqual(self.current_branch(), self.checkout_branch)
+
+    def test_post_survives_a_machine_without_gh(self):
+        with mock.patch.object(hm.shutil, "which", return_value=None):
+            code, _, err = self.run_cli(*self.post_args())
+
+        self.assertEqual(code, 0, err)
+        self.assertIn("gh", err)
+        self.assertIn("gh pr create --base main --head post/board-fixture", err)
+        refs = git("ls-remote", "--heads", "origin", cwd=self.board).stdout
+        self.assertIn(f"refs/heads/{self.checkout_branch}", refs)
+
+    def test_post_reports_a_merge_failure_without_failing_the_post(self):
+        self.install_fake_gh(merge_fail={7})
+
+        code, out, err = self.run_cli(*self.post_args())
+
+        self.assertEqual(code, 0, err)
+        self.assertIn("hm merge 7", out + err)
+        self.assertEqual(self.current_branch(), self.checkout_branch)
+
+    def test_merge_all_merges_every_open_pr_and_reports_failures(self):
+        self.install_fake_gh(
+            merge_fail={13},
+            list_prs=[
+                {"number": 12, "headRefName": "post/one"},
+                {"number": 13, "headRefName": "post/two"},
+            ],
+        )
+
+        code, out, err = self.run_cli("merge", "--all")
+
+        self.assertEqual(code, 1, out + err)
+        self.assertIn("merged #12 post/one", out)
+        self.assertIn("#13", out + err)
+        calls = self.gh_calls()
+        self.assertTrue(any(call.startswith("pr merge 12 --rebase") for call in calls), calls)
+        self.assertTrue(any(call.startswith("pr merge 13 --rebase") for call in calls), calls)
+
+    def test_merge_requires_a_target_or_all(self):
+        self.install_fake_gh()
+
+        code, _, err = self.run_cli("merge")
+
+        self.assertEqual(code, 1, err)
+        self.assertIn("--all", err)
+        self.assertEqual(self.gh_calls(), [])
 
     def test_endorse_leaves_an_existing_upstream_alone(self):
         # a branch deliberately tracking a mirror rather than origin

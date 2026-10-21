@@ -2,8 +2,10 @@
 """hivemind board command line interface."""
 
 import argparse
+import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -347,6 +349,116 @@ def _require_feature_branch(remote: str, action: str) -> str:
     return branch
 
 
+def _gh_available() -> bool:
+    return shutil.which("gh") is not None
+
+
+def _gh(*args) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        ["gh", *args], cwd=str(board_path()), capture_output=True, text=True
+    )
+
+
+def _default_branch(remote: str) -> str:
+    return _remote_default_branch(remote) or PROTECTED_FALLBACK[0]
+
+
+def _pr_number(url: str):
+    match = re.search(r"/pull/(\d+)", url)
+    return int(match.group(1)) if match else None
+
+
+def _find_open_pr(branch: str):
+    if not _gh_available():
+        return None
+    view = _gh("pr", "view", branch, "--json", "number,url,state")
+    if view.returncode != 0:
+        return None
+    try:
+        data = json.loads(view.stdout)
+    except ValueError:
+        return None
+    return data if data.get("state") == "OPEN" else None
+
+
+def _pr_hint(remote: str, branch: str, title: str) -> str:
+    return (
+        f"  gh pr create --base {_default_branch(remote)} --head {branch} "
+        f"--title {shlex.quote(f'post: {title}')}"
+    )
+
+
+def _open_pr(remote: str, branch: str, title: str, body: str):
+    """Open a PR for the pushed branch, or reuse the open one. None if gh can't."""
+    existing = _find_open_pr(branch)
+    if existing:
+        emit(f"PR {existing.get('url')} is already open")
+        return existing
+    if not _gh_available():
+        print(
+            "gh not found — the post is pushed but no PR was opened.\n"
+            "Open one with:\n" + _pr_hint(remote, branch, title),
+            file=sys.stderr,
+        )
+        return None
+    create = _gh(
+        "pr", "create",
+        "--base", _default_branch(remote),
+        "--head", branch,
+        "--title", f"post: {title}",
+        "--body", body,
+    )
+    if create.returncode != 0:
+        detail = (create.stderr or create.stdout).strip()
+        print(
+            f"could not open a PR: {detail}\nOpen one with:\n"
+            + _pr_hint(remote, branch, title),
+            file=sys.stderr,
+        )
+        return None
+    url = create.stdout.strip().splitlines()[-1] if create.stdout.strip() else ""
+    number = _pr_number(url)
+    if number is None:
+        return _find_open_pr(branch)
+    emit(f"opened PR {url}")
+    return {"number": number, "url": url, "state": "OPEN"}
+
+
+def _merge_pr(target):
+    proc = _gh("pr", "merge", str(target), "--rebase")
+    if proc.returncode != 0:
+        return False, (proc.stderr or proc.stdout).strip()
+    return True, ""
+
+
+def _return_to_default(remote: str, branch: str) -> None:
+    default = _default_branch(remote)
+    try:
+        run_git("switch", default)
+    except GitError as exc:
+        print(f"merged, but could not switch to {default}: {exc}", file=sys.stderr)
+        return
+    pull = run_git("pull", "--rebase", check=False)
+    if pull.returncode != 0:
+        detail = (pull.stderr or pull.stdout).strip()
+        print(f"merged, but could not update {default}: {detail}", file=sys.stderr)
+    run_git("branch", "-D", branch, check=False)
+
+
+def _merge_posted_pr(remote: str, branch: str, pr: dict) -> None:
+    number = pr["number"]
+    ok, detail = _merge_pr(number)
+    if not ok:
+        print(
+            f"could not merge PR #{number}: {detail}\n"
+            f"It is still open at {pr.get('url')}. Retry with: ./hm merge {number}",
+            file=sys.stderr,
+        )
+        return
+    emit(f"merged PR #{number} into {_default_branch(remote)}")
+    _return_to_default(remote, branch)
+
+
 def _post_path(pid: str) -> Path:
     if pid.endswith(".md"):
         pid = pid[:-3]
@@ -446,6 +558,7 @@ def cmd_post(args) -> None:
     except GitError:
         die(f"unknown git remote '{args.remote}'; pass --remote <remote name>")
     _require_feature_branch(args.remote, "post")
+    branch = _current_branch()
     body = _read_body(args.body)
     now = datetime.now().astimezone()
     pid = make_id(args.title, now)
@@ -473,7 +586,64 @@ def cmd_post(args) -> None:
     run_git("commit", "-m", f"post: {args.title}")
     _set_upstream(args.remote)
     push_or_stop(args.remote)
+    if not args.no_pr:
+        pr = _open_pr(args.remote, branch, args.title, _pr_body(meta))
+        if pr:
+            if args.no_merge:
+                emit(
+                    f"PR {pr['url']} left open; merge it with: ./hm merge {pr['number']}"
+                )
+            else:
+                _merge_posted_pr(args.remote, branch, pr)
     emit(f"posted {pid}")
+
+
+def _pr_body(meta: dict) -> str:
+    topics = ", ".join(str(topic) for topic in _as_list(meta.get("topics")))
+    projects = ", ".join(str(project) for project in _as_list(meta.get("projects")))
+    return (
+        "Posted with hm.\n\n"
+        f"- id: {meta.get('id')}\n"
+        f"- kind: {meta.get('kind')}\n"
+        f"- topics: {topics}\n"
+        f"- projects: {projects}"
+    )
+
+
+def cmd_merge(args) -> None:
+    targets = list(args.targets)
+    if not targets and not args.all:
+        die("give a PR number or branch, or --all")
+    if not _gh_available():
+        die("gh not found; install the GitHub CLI to merge PRs")
+    prs = []
+    if args.all:
+        listing = _gh("pr", "list", "--json", "number,headRefName", "--limit", "100")
+        if listing.returncode != 0:
+            die(f"could not list PRs: {(listing.stderr or listing.stdout).strip()}")
+        try:
+            for item in json.loads(listing.stdout or "[]"):
+                prs.append((item["number"], item.get("headRefName", "")))
+        except (ValueError, KeyError, TypeError) as exc:
+            die(f"could not read the PR list: {exc}")
+    for target in targets:
+        prs.append((target, ""))
+    if not prs:
+        emit("no open PRs")
+        return
+    failures = 0
+    for number, branch in prs:
+        ok, detail = _merge_pr(number)
+        if ok:
+            emit(f"merged #{number} {branch}".rstrip())
+        else:
+            failures += 1
+            print(
+                f"could not merge #{number} {branch}: {detail}".rstrip(),
+                file=sys.stderr,
+            )
+    if failures:
+        die(f"{failures} of {len(prs)} PR(s) not merged")
 
 
 def _stream_posts_path(pid: str) -> Path:
@@ -951,7 +1121,7 @@ def build_parser() -> argparse.ArgumentParser:
     pull = sub.add_parser("pull", help="fetch and rebase onto the remote")
     pull.set_defaults(func=cmd_pull)
 
-    post = sub.add_parser("post", help="write a post and push it")
+    post = sub.add_parser("post", help="write a post, push it, and open/merge a PR")
     post.add_argument("--title", required=True)
     post.add_argument("--kind", required=True)
     post.add_argument("--topics", required=True, help="comma separated")
@@ -959,7 +1129,16 @@ def build_parser() -> argparse.ArgumentParser:
     post.add_argument("--body", default=None, help="'-' for stdin, or a file path")
     post.add_argument("--origin", default="gift", help="who is writing this post")
     post.add_argument("--remote", default="origin", help="git remote to push to")
+    post.add_argument("--no-pr", action="store_true", help="push only; do not open a PR")
+    post.add_argument(
+        "--no-merge", action="store_true", help="open the PR but leave it for review"
+    )
     post.set_defaults(func=cmd_post)
+
+    merge = sub.add_parser("merge", help="merge open PRs with a rebase")
+    merge.add_argument("targets", nargs="*", help="PR numbers or branches")
+    merge.add_argument("--all", action="store_true", help="merge every open PR")
+    merge.set_defaults(func=cmd_merge)
 
     status = sub.add_parser("status", help="board summary")
     status.set_defaults(func=cmd_status)
