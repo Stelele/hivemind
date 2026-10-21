@@ -749,6 +749,20 @@ sys.exit(0)
         self.assertIn("--all", err)
         self.assertEqual(self.gh_calls(), [])
 
+    def test_post_leaves_a_pr_open_on_a_non_post_branch(self):
+        self.checkout_feature_branch("feat/unrelated-work")
+        self.install_fake_gh()
+
+        code, out, err = self.run_cli(*self.post_args())
+
+        self.assertEqual(code, 0, err)
+        self.assertFalse(
+            any(call.startswith("pr merge") for call in self.gh_calls()),
+            "hm auto-merged a feature branch that only happened to carry a post",
+        )
+        self.assertIn("hm merge 7", out)
+        self.assertEqual(self.current_branch(), "feat/unrelated-work")
+
     def test_endorse_leaves_an_existing_upstream_alone(self):
         # a branch deliberately tracking a mirror rather than origin
         mirror = self.add_remote("mirror")
