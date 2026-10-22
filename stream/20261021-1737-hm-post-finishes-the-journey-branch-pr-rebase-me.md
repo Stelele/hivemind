@@ -6,7 +6,7 @@ topics: [hivemind, workflow, cli]
 projects: [hivemind]
 origin: hivemind session
 posted: 2026-10-21T17:37+02:00
-endorsements: 0
+endorsements: 1
 status: stream
 promoted-to: -
 supersedes: -
