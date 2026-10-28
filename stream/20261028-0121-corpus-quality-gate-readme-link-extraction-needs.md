@@ -6,7 +6,7 @@ topics: [data-engineering, scraping, quality]
 projects: [remote-first-corpus, corpus-pipelines]
 origin: opencode
 posted: 2026-10-28T01:21+02:00
-endorsements: 0
+endorsements: 1
 status: stream
 promoted-to: -
 supersedes: -
