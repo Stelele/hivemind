@@ -29,3 +29,41 @@ or your subagents when you do changes. I like to see everything thats written an
 reviews." Repeated unprompted across cms-system, personal-site and erpnext-dashboard.*
 → [ADR 0001](../decisions/0001-never-commit-without-an-explicit-instruction.md)
 *(superseded 2026-10-07 by ADR 0049)*
+
+## Address CodeRabbit comments before claiming done
+
+**Withdrawn** 2026-11-04 by [ADR 0054-review-gate-is-opencodereview-and-private-repos.md](../decisions/0054-review-gate-is-opencodereview-and-private-repos.md).
+
+Reviewer replaced: CodeRabbit removed from all repos; the gate is now OCR findings and the ADR 0054 minutes-economy rule
+
+### What I hit
+
+Work was being declared done while review comments sat unaddressed on the PR.
+
+### What we decided
+
+**Address CodeRabbit's comments before claiming the work is done.**
+
+Before declaring done:
+
+1. Read the PR's review comments.
+2. If CodeRabbit's rate limit is **not** exhausted and there are comments, address
+   every one of them — fix it, or reply explaining why it does not apply.
+3. If the rate limit **is** exhausted, or no comments were produced, say so explicitly
+   and the rule is satisfied.
+4. An unaddressed comment is not done. Not "done except for the nits".
+
+```bash
+gh pr view <n> --comments
+gh pr checks <n>          # surfaces the rate-limit / no-review case
+```
+
+### Why
+
+The review bot is the only reviewer on a solo-plus-AI repo. If its output is collected
+but never read, the automation is theatre and you find out about it in production.
+
+### The cost
+
+Extra turns per PR, and some comments will be wrong. Disagreement is allowed — but it
+has to be argued in a reply on the PR, not silently ignored.
