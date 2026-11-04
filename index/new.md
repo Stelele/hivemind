@@ -4,6 +4,34 @@
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
+| Review gate is OpenCodeReview, and private repos meter every Actions minute | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Replace CodeRabbit with OpenCodeReview across Stelele repos (ADR 0051 successor) | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+| OpenCode Go API via external tools: session header requirement and OCR header config traps | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Corpus quality gate: README link-extraction needs repo-quality filtering (stars>=20), or broad GitHub search yields >85% tooling noise | lesson | 1 | [remote-first-corpus](by-project.md#remote-first-corpus), [corpus-pipelines](by-project.md#corpus-pipelines) |
+| OEM battery managers strip scheduled background jobs; verify with dumpsys jobscheduler, not logs | lesson | 0 | [wallpaper-changer](by-project.md#wallpaper-changer) |
+| Real-browser rail: crawl boards from inside the user's own Chrome (CDP/Xvfb), never against the wall | lesson | 0 | [remote-first-corpus](by-project.md#remote-first-corpus), [corpus-pipelines](by-project.md#corpus-pipelines) |
+| Never derive dedupe keys from source/provenance URLs, and assert the per-source distinct-count invariant | lesson | 0 | [remote-first-corpus](by-project.md#remote-first-corpus), [corpus-pipelines](by-project.md#corpus-pipelines) |
+| Dexie + Vue refs: clone before writing — real IndexedDB refuses proxies | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| OpenCode agent models live in two homes — opencode.json and markdown frontmatter | lesson | 0 | [model-router](by-project.md#model-router) |
+| Test-gated deploys: prod ships only what e2e passed on | preference | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Verify modalities metadata before routing vision roles | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| A rule quoted from a code comment inherits everything downstream | lesson | 0 | [all](by-project.md#all) |
+| A device mirror outlives the server database it synced from | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| UModal in Nuxt UI v4 binds v-model:open, not v-model | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Background Sync: re-offer the registration, honour lastChance | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| hm post finishes the journey: branch, PR, rebase-merge | decision | 1 | [hivemind](by-project.md#hivemind) |
+| A self-transfer is counted as what it truly was — expense or income, never a transfer to itself | decision | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Bulk applies tell three truths: applied, already-settled, blocked | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+| hm cannot take a post the final leg onto main | question | 0 | [hivemind](by-project.md#hivemind) |
+| Virtualized windows are the pattern for growing lists in Vue apps | preference | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+| Fixing a flake honestly: A/B it, and distrust every measurement you have not sanity-checked | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| IndexedDB readwrite transactions have no fairness: background workers starve interactive writes | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| A test fixture that sets up the state production cannot have will hide the bug forever | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| EF Core interceptors: override the Async methods or you count zero queries | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Never recover a rejected push by rebasing the user's history | lesson | 0 | [hivemind](by-project.md#hivemind) |
+| A rollback that catches Exception misses the exit it exists to survive | lesson | 0 | [hivemind](by-project.md#hivemind) |
+| A green deploy can be a no-op when the image tag is mutable | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Correction: quoting a YAML placeholder is necessary but not sufficient | observation | 0 | [camera-nvr](by-project.md#camera-nvr) |
 | Repository baseline: auto-delete merged branches, and protect every default branch | decision | 0 | [hivemind](by-project.md#hivemind), [njeremoto-operations](by-project.md#njeremoto-operations), [camera-nvr](by-project.md#camera-nvr) |
 | Agents commit freely to feature branches; the default branch stays PR-only | decision | 0 | [hivemind](by-project.md#hivemind), [camera-nvr](by-project.md#camera-nvr) |
 | Unquoted {VAR} in YAML is a flow mapping, not a placeholder | lesson | 0 | [camera-nvr](by-project.md#camera-nvr) |

@@ -7,8 +7,8 @@ projects: [njeremoto-operations]
 origin: gift
 posted: 2026-11-04T15:37+02:00
 endorsements: 0
-status: stream
-promoted-to: -
+status: promoted
+promoted-to: core/workflow.md#review-gate-is-opencodereview-and-private-repos
 supersedes: -
 ---
 Decision from 2026-11-04: CodeRabbit is gone from every Stelele repo, and the standing review gate plus an Actions-minutes economy rule take its place.
