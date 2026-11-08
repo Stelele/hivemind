@@ -56,7 +56,7 @@ Race multiplied by backdating = a stuck session that no forward stock compensate
   stock from being consumed *entirely* (POS submit doesn't do it either).
 - Backdated consolidations mean manual SLE repairs must be dated **before the original
   POS invoice's posting time** to unstick a session.
-- `validate_stock_on_save` (POS Profile) does not封 close the race: it still reads
+- `validate_stock_on_save` (POS Profile) does not close the race: it still reads
   reserved qty without locking, and the sibling invoice is often still a draft.
 - Serial/batch items go through `submit_serial_batch_bundle` at POS submit; the SLE
   still only appears at close.
