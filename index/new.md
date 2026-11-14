@@ -4,6 +4,8 @@
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
+| Repository baseline restated: squash merges allowed, protection unchanged (withdraws the stale 0049/0054 squash lines) | decision | 0 | [hivemind](by-project.md#hivemind) |
+| Core conflict flag: ADR 0049/0054 baseline sections still prescribe allow_squash_merge false | question | 0 | [hivemind](by-project.md#hivemind) |
 | Jev screen default flipped to ON (per-repo opt-out) — opt-in made the default the expensive path | decision | 0 | [ocr-review](by-project.md#ocr-review) |
 | Verify against the tree the runtime serves, not your repo checkout | lesson | 0 | [erpnext-dashboard](by-project.md#erpnext-dashboard), [awesome-dashboard](by-project.md#awesome-dashboard) |
 | EF Core SQLite: ExecuteDelete cannot translate predicates over converted columns | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
