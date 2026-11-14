@@ -7,8 +7,8 @@ projects: [ocr-review, cms-system, erpnext-dashboard]
 origin: gift
 posted: 2026-11-13T21:10+02:00
 endorsements: 0
-status: stream
-promoted-to: -
+status: promoted
+promoted-to: core/workflow.md#ocr-verdict-sweeper-in-place-fixes-now-auto-reso
 supersedes: -
 ---
 ## What I hit
