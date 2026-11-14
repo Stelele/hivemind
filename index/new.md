@@ -4,6 +4,31 @@
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
+| Jev screen default flipped to ON (per-repo opt-out) — opt-in made the default the expensive path | decision | 0 | [ocr-review](by-project.md#ocr-review) |
+| Verify against the tree the runtime serves, not your repo checkout | lesson | 0 | [erpnext-dashboard](by-project.md#erpnext-dashboard), [awesome-dashboard](by-project.md#awesome-dashboard) |
+| EF Core SQLite: ExecuteDelete cannot translate predicates over converted columns | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Jev noul screen validates against OCR backlog: 0 false resolves, catches bad resolves both directions | lesson | 0 | [ocr-review](by-project.md#ocr-review), [erpnext-dashboard](by-project.md#erpnext-dashboard), [erpnext-point-of-sale-expenses](by-project.md#erpnext-point-of-sale-expenses) |
+| Background write paths must announce themselves to the read-refresh seam | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+| JSON casing across language boundaries is a wire contract | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+| Smoke-test wire-adjacent code in a real browser before merge | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+| OCR verdict sweeper: in-place fixes now auto-resolved; resolve_outdated only sees line deletions | lesson | 0 | [ocr-review](by-project.md#ocr-review), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+| Squash merges enabled account-wide; merge commits off | decision | 0 | [hivemind](by-project.md#hivemind), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+| Ported code verbatim is not correct code — fix ported defects against the target model | decision | 0 | [erpnext-dashboard](by-project.md#erpnext-dashboard), [awesome-dashboard](by-project.md#awesome-dashboard) |
+| Check an app's installer.py before assuming token capability | lesson | 0 | [erpnext-dashboard](by-project.md#erpnext-dashboard), [awesome-dashboard](by-project.md#awesome-dashboard) |
+| Gateway integrations: handle every terminal-not-paid status, not just FAILED | lesson | 0 | [pesepay](by-project.md#pesepay), [frappe](by-project.md#frappe) |
+| Frappe: company-scoped gateway accounts, hook timing, test isolation, ruff target-version | lesson | 0 | [pesepay](by-project.md#pesepay), [frappe](by-project.md#frappe) |
+| Explicit secrets maps on cross-repo reusable-workflow calls startup-fail; secrets: inherit is the only working form | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Reusable-workflow permission floors; workflow-YAML gotchas from the tier run | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Whole-repo OCR review recipe; verify LLM review findings before acting | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| "Frappe test harness: secondary_connection silently strands the primary connection" | lesson | 0 | [pos_expenses](by-project.md#pos-expenses) |
+| Stelele/ocr-review shared workflow: secrets must exist in the shared repo itself | lesson | 0 | [all](by-project.md#all) |
+| Private cross-repo workflows fail silently; gh token 404 matrix | lesson | 0 | [erpnext-point-of-sale-expenses](by-project.md#erpnext-point-of-sale-expenses), [ocr-review](by-project.md#ocr-review), [papi_iot](by-project.md#papi-iot), [breakout](by-project.md#breakout) |
+| Frappe: doc_events handlers cannot control transactions — use extend_doctype_class | lesson | 0 | [pos_expenses](by-project.md#pos-expenses) |
+| ERPNext v16 POS Invoice mode: stock posts at POS Closing, not at checkout | lesson | 0 | [awesome_butchery](by-project.md#awesome-butchery), [pos_expenses](by-project.md#pos-expenses) |
+| Session executes static-analysis CLIs; agents only interpret the results (analyze-codebase) | preference | 0 | [all](by-project.md#all) |
+| Arcan is not FOSS; OSS CodeScene stack = CodeCharta (+dep lens) + Code Maat, installed globally | lesson | 0 | [all](by-project.md#all) |
+| Arcan is not FOSS; OSS CodeScene stack = CodeCharta (+dep lens) + Code Maat, installed globally | lesson | 0 | [all](by-project.md#all) |
+| Pipelines: job permissions replace defaults, and rebase merges drop empty commits | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 | Review gate is OpenCodeReview, and private repos meter every Actions minute | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 | Replace CodeRabbit with OpenCodeReview across Stelele repos (ADR 0051 successor) | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 | OpenCode Go API via external tools: session header requirement and OCR header config traps | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |

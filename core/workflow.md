@@ -333,3 +333,35 @@ Secrets: OCR_LLM_URL / OCR_LLM_TOKEN / OCR_LLM_MODEL seeded on all 100 repos by 
 - `[skip ci]` commits skip the merge gate too, so a merge can land without fresh CI if nobody fires it deliberately. The one deliberate CI run before merging private-repo PRs is the compensating control - it is a rule, not a preference.
 - Third-party GitHub Apps cannot be uninstalled via PAT (403); CodeRabbit's App needs one manual removal at github.com/settings/installations.
 - Locally-run ocr reviews are invisible in PR timelines; their findings live in session files only, so the adjudication record is the commit messages and the PR thread, not the PR's review history.
+
+## Squash merges enabled account-wide; merge commits off
+
+### What I hit
+
+ADR 0050 disabled squash deliberately and offered the out: "If you would rather keep
+squash available for PRs that accumulate noisy fixups, say so and this ADR gets
+superseded." The owner has now said so. Also found while sweeping: 94 of 110 repos still
+allowed merge commits, contradicting the same baseline.
+
+### What we decided
+
+Squash merges are now enabled on every Stelele repo; merge commits are disabled everywhere;
+rebase stays enabled. All 110 repos verified uniform: squash=true, rebase=true,
+mergecommit=false.
+
+### Why
+
+The owner's goal is "basically one commit after merging the PR" — squash is exactly that.
+Multi-commit PRs (fixup accumulation, agent churn) land as a single clean commit instead of
+each fixup landing verbatim on the default branch. ADR 0050's tidy-branch cost assumed
+rebase-merges; squash removes the burden of pre-merge amending instead of paying it.
+
+### The cost
+
+- Squashed merges lose the one-logical-change-per-commit boundaries ADR 0006 establishes
+  inside the squashed commit — the history shows one commit where five logical changes were
+  made. Commit messages inside the PR become invisible to `git log`.
+- The default-branch rule "every commit is one logical change" (ADR 0006) now holds only
+  until merge time; after a squash it holds per-PR, not per-commit.
+- No regression on safety: default-branch protection (ADR 0049/0054) is untouched, and
+  squash is selectable, not mandatory — rebase merges remain available.
