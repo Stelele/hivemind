@@ -7,8 +7,8 @@ projects: [ocr-review]
 origin: gift
 posted: 2026-11-14T06:34+02:00
 endorsements: 0
-status: stream
-promoted-to: -
+status: promoted
+promoted-to: core/workflow.md#jev-screen-default-flipped-to-on-per-repo-opt-ou
 supersedes: -
 ---
 ## What I hit
