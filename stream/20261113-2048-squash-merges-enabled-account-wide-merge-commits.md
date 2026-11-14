@@ -7,8 +7,8 @@ projects: [hivemind, cms-system, erpnext-dashboard]
 origin: gift
 posted: 2026-11-13T20:48+02:00
 endorsements: 0
-status: stream
-promoted-to: -
+status: promoted
+promoted-to: core/workflow.md#squash-merges-enabled-account-wide-merge-commits
 supersedes: -
 ---
 ## What I hit

@@ -16,6 +16,7 @@
 | Reviewer line numbers go stale | lesson | 3 | [opencode-config](by-project.md#opencode-config) |
 | Address CodeRabbit comments before claiming done | preference | 3 | [frappe-offline](by-project.md#frappe-offline), [class-booking-system](by-project.md#class-booking-system), [cms-system](by-project.md#cms-system), [njeremoto-operations](by-project.md#njeremoto-operations) |
 | Verify modalities metadata before routing vision roles | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Session executes static-analysis CLIs; agents only interpret the results (analyze-codebase) | preference | 0 | [all](by-project.md#all) |
 
 ## ai
 
@@ -42,6 +43,18 @@
 | frappe.call endpoints need the .api module segment | lesson | 3 | [frappe-offline](by-project.md#frappe-offline), [awesome_restaurant3](by-project.md#awesome-restaurant3) |
 | One typed API client, generated schema, null-safe | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 | Bulk applies tell three truths: applied, already-settled, blocked | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+
+## api-clients
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Smoke-test wire-adjacent code in a real browser before merge | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+
+## api-integration
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Gateway integrations: handle every terminal-not-paid status, not just FAILED | lesson | 0 | [pesepay](by-project.md#pesepay), [frappe](by-project.md#frappe) |
 
 ## append-only
 
@@ -123,6 +136,7 @@
 | App name is not the folder name | lesson | 4 | [frappe-offline](by-project.md#frappe-offline), [awesome_restaurant3](by-project.md#awesome-restaurant3) |
 | Bench CLI verbs that do not exist | lesson | 3 | [frappe-offline](by-project.md#frappe-offline), [frappe-bench](by-project.md#frappe-bench) |
 | Scheduler all interval is a 4 minute tick | lesson | 3 | [frappe-offline](by-project.md#frappe-offline) |
+| Verify against the tree the runtime serves, not your repo checkout | lesson | 0 | [erpnext-dashboard](by-project.md#erpnext-dashboard), [awesome-dashboard](by-project.md#awesome-dashboard) |
 
 ## branch-protection
 
@@ -130,6 +144,12 @@
 | --- | --- | --- | --- |
 | Default branch is protected; PR-only, no force push | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
 | Branch protection is public-repos-only on the free plan | lesson | 1 | [hivemind](by-project.md#hivemind), [njeremoto-operations](by-project.md#njeremoto-operations), [dotfiles](by-project.md#dotfiles) |
+
+## browser
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Smoke-test wire-adjacent code in a real browser before merge | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 
 ## build
 
@@ -154,6 +174,11 @@
 | Fixing a flake honestly: A/B it, and distrust every measurement you have not sanity-checked | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 | Test-gated deploys: prod ships only what e2e passed on | preference | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 | OpenCode Go API via external tools: session header requirement and OCR header config traps | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Private cross-repo workflows fail silently; gh token 404 matrix | lesson | 0 | [erpnext-point-of-sale-expenses](by-project.md#erpnext-point-of-sale-expenses), [ocr-review](by-project.md#ocr-review), [papi_iot](by-project.md#papi-iot), [breakout](by-project.md#breakout) |
+| Stelele/ocr-review shared workflow: secrets must exist in the shared repo itself | lesson | 0 | [all](by-project.md#all) |
+| Reusable-workflow permission floors; workflow-YAML gotchas from the tier run | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Explicit secrets maps on cross-repo reusable-workflow calls startup-fail; secrets: inherit is the only working form | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| OCR verdict sweeper: in-place fixes now auto-resolved; resolve_outdated only sees line deletions | lesson | 0 | [ocr-review](by-project.md#ocr-review), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 
 ## ci/tools
 
@@ -161,6 +186,7 @@
 | --- | --- | --- | --- |
 | Replace CodeRabbit with OpenCodeReview across Stelele repos (ADR 0051 successor) | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 | Review gate is OpenCodeReview, and private repos meter every Actions minute | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Pipelines: job permissions replace defaults, and rebase merges drop empty commits | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 
 ## classifications
 
@@ -182,11 +208,25 @@
 | --- | --- | --- | --- |
 | rclone sync against a rolling source erases the archive | lesson | 0 | [camera-nvr](by-project.md#camera-nvr), [njeremoto-operations](by-project.md#njeremoto-operations) |
 
+## code-analysis
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Arcan is not FOSS; OSS CodeScene stack = CodeCharta (+dep lens) + Code Maat, installed globally | lesson | 0 | [all](by-project.md#all) |
+| Arcan is not FOSS; OSS CodeScene stack = CodeCharta (+dep lens) + Code Maat, installed globally | lesson | 0 | [all](by-project.md#all) |
+| Session executes static-analysis CLIs; agents only interpret the results (analyze-codebase) | preference | 0 | [all](by-project.md#all) |
+
 ## code-comments
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | A rule quoted from a code comment inherits everything downstream | lesson | 0 | [all](by-project.md#all) |
+
+## code-review
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Ported code verbatim is not correct code — fix ported defects against the target model | decision | 0 | [erpnext-dashboard](by-project.md#erpnext-dashboard), [awesome-dashboard](by-project.md#awesome-dashboard) |
 
 ## code-style
 
@@ -203,6 +243,13 @@
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | Address CodeRabbit comments before claiming done | preference | 3 | [frappe-offline](by-project.md#frappe-offline), [class-booking-system](by-project.md#class-booking-system), [cms-system](by-project.md#cms-system), [njeremoto-operations](by-project.md#njeremoto-operations) |
+
+## codescene
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Arcan is not FOSS; OSS CodeScene stack = CodeCharta (+dep lens) + Code Maat, installed globally | lesson | 0 | [all](by-project.md#all) |
+| Arcan is not FOSS; OSS CodeScene stack = CodeCharta (+dep lens) + Code Maat, installed globally | lesson | 0 | [all](by-project.md#all) |
 
 ## components
 
@@ -237,11 +284,23 @@
 | --- | --- | --- | --- |
 | A green deploy can be a no-op when the image tag is mutable | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 
+## contracts
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| JSON casing across language boundaries is a wire contract | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+
 ## corrections
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | When an invariant blocks a needed correction, add a void rather than relaxing the invariant | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+
+## cost
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Session executes static-analysis CLIs; agents only interpret the results (analyze-codebase) | preference | 0 | [all](by-project.md#all) |
 
 ## crawler
 
@@ -268,6 +327,12 @@
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | Design-system values outside the public surface lie | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+
+## dashboard
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Check an app's installer.py before assuming token capability | lesson | 0 | [erpnext-dashboard](by-project.md#erpnext-dashboard), [awesome-dashboard](by-project.md#awesome-dashboard) |
 
 ## data-engineering
 
@@ -323,6 +388,12 @@
 | --- | --- | --- | --- |
 | Dexie + Vue refs: clone before writing — real IndexedDB refuses proxies | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 
+## doc-events
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Frappe: doc_events handlers cannot control transactions — use extend_doctype_class | lesson | 0 | [pos_expenses](by-project.md#pos-expenses) |
+
 ## docker
 
 | title | kind | score | project links |
@@ -352,6 +423,7 @@
 | Name the capability, then pick the database | decision | 3 | [pesepay-payment-gateway](by-project.md#pesepay-payment-gateway), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 | One naming table for TypeScript and .NET | preference | 4 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 | Empty string is not 'unset' to the .NET config binder | lesson | 1 | [njeremoto-operations](by-project.md#njeremoto-operations), [class-booking-system](by-project.md#class-booking-system) |
+| JSON casing across language boundaries is a wire contract | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 
 ## double-entry
 
@@ -378,6 +450,12 @@
 | --- | --- | --- | --- |
 | A name two sides each derive from a third will drift, and it drifts into silence | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 
+## efcore
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| EF Core SQLite: ExecuteDelete cannot translate predicates over converted columns | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+
 ## enforcement
 
 | title | kind | score | project links |
@@ -385,11 +463,30 @@
 | Default branch is protected; PR-only, no force push | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
 | Branch protection is public-repos-only on the free plan | lesson | 1 | [hivemind](by-project.md#hivemind), [njeremoto-operations](by-project.md#njeremoto-operations), [dotfiles](by-project.md#dotfiles) |
 
+## erpnext
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| ERPNext v16 POS Invoice mode: stock posts at POS Closing, not at checkout | lesson | 0 | [awesome_butchery](by-project.md#awesome-butchery), [pos_expenses](by-project.md#pos-expenses) |
+| Frappe: company-scoped gateway accounts, hook timing, test isolation, ruff target-version | lesson | 0 | [pesepay](by-project.md#pesepay), [frappe](by-project.md#frappe) |
+
 ## estimators
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | Ask only when a reading is not determined; determination is flow-level, assignment is a matching problem | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+
+## eventual-consistency
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Background write paths must announce themselves to the read-refresh seam | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+
+## extend-doctype-class
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Frappe: doc_events handlers cannot control transactions — use extend_doctype_class | lesson | 0 | [pos_expenses](by-project.md#pos-expenses) |
 
 ## false-confidence
 
@@ -430,6 +527,12 @@
 | frappe.call endpoints need the .api module segment | lesson | 3 | [frappe-offline](by-project.md#frappe-offline), [awesome_restaurant3](by-project.md#awesome-restaurant3) |
 | Page permissions beat JS role gates | lesson | 3 | [awesome_restaurant3](by-project.md#awesome-restaurant3), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 | Scheduler all interval is a 4 minute tick | lesson | 3 | [frappe-offline](by-project.md#frappe-offline) |
+| Frappe: doc_events handlers cannot control transactions — use extend_doctype_class | lesson | 0 | [pos_expenses](by-project.md#pos-expenses) |
+| "Frappe test harness: secondary_connection silently strands the primary connection" | lesson | 0 | [pos_expenses](by-project.md#pos-expenses) |
+| Frappe: company-scoped gateway accounts, hook timing, test isolation, ruff target-version | lesson | 0 | [pesepay](by-project.md#pesepay), [frappe](by-project.md#frappe) |
+| Check an app's installer.py before assuming token capability | lesson | 0 | [erpnext-dashboard](by-project.md#erpnext-dashboard), [awesome-dashboard](by-project.md#awesome-dashboard) |
+| Ported code verbatim is not correct code — fix ported defects against the target model | decision | 0 | [erpnext-dashboard](by-project.md#erpnext-dashboard), [awesome-dashboard](by-project.md#awesome-dashboard) |
+| Verify against the tree the runtime serves, not your repo checkout | lesson | 0 | [erpnext-dashboard](by-project.md#erpnext-dashboard), [awesome-dashboard](by-project.md#awesome-dashboard) |
 
 ## frigate
 
@@ -437,6 +540,12 @@
 | --- | --- | --- | --- |
 | Unquoted {VAR} in YAML is a flow mapping, not a placeholder | lesson | 0 | [camera-nvr](by-project.md#camera-nvr) |
 | Correction: quoting a YAML placeholder is necessary but not sufficient | observation | 0 | [camera-nvr](by-project.md#camera-nvr) |
+
+## frontend-architecture
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Background write paths must announce themselves to the read-refresh seam | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 
 ## frontend-pattern
 
@@ -452,18 +561,24 @@
 | Default branch is protected; PR-only, no force push | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
 | Rebase merges only; linear history | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations), [hivemind](by-project.md#hivemind), [dotfiles](by-project.md#dotfiles) |
 | Branch protection is public-repos-only on the free plan | lesson | 1 | [hivemind](by-project.md#hivemind), [njeremoto-operations](by-project.md#njeremoto-operations), [dotfiles](by-project.md#dotfiles) |
+| Squash merges enabled account-wide; merge commits off | decision | 0 | [hivemind](by-project.md#hivemind), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 
 ## github
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | Branch protection is public-repos-only on the free plan | lesson | 1 | [hivemind](by-project.md#hivemind), [njeremoto-operations](by-project.md#njeremoto-operations), [dotfiles](by-project.md#dotfiles) |
+| Squash merges enabled account-wide; merge commits off | decision | 0 | [hivemind](by-project.md#hivemind), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 
 ## github-actions
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | gha cache export needs buildx in build-push-action | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [class-booking-system](by-project.md#class-booking-system) |
+| Private cross-repo workflows fail silently; gh token 404 matrix | lesson | 0 | [erpnext-point-of-sale-expenses](by-project.md#erpnext-point-of-sale-expenses), [ocr-review](by-project.md#ocr-review), [papi_iot](by-project.md#papi-iot), [breakout](by-project.md#breakout) |
+| Stelele/ocr-review shared workflow: secrets must exist in the shared repo itself | lesson | 0 | [all](by-project.md#all) |
+| Reusable-workflow permission floors; workflow-YAML gotchas from the tier run | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Explicit secrets maps on cross-repo reusable-workflow calls startup-fail; secrets: inherit is the only working form | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 
 ## hardware
 
@@ -496,11 +611,24 @@
 | --- | --- | --- | --- |
 | A name two sides each derive from a third will drift, and it drifts into silence | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 
+## inventory
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| ERPNext v16 POS Invoice mode: stock posts at POS Closing, not at checkout | lesson | 0 | [awesome_butchery](by-project.md#awesome-butchery), [pos_expenses](by-project.md#pos-expenses) |
+
 ## iot
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | A canned identical error means gating, not absence | lesson | 0 | [camera-nvr](by-project.md#camera-nvr) |
+
+## jev
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Jev noul screen validates against OCR backlog: 0 false resolves, catches bad resolves both directions | lesson | 0 | [ocr-review](by-project.md#ocr-review), [erpnext-dashboard](by-project.md#erpnext-dashboard), [erpnext-point-of-sale-expenses](by-project.md#erpnext-point-of-sale-expenses) |
+| Jev screen default flipped to ON (per-repo opt-out) — opt-in made the default the expensive path | decision | 0 | [ocr-review](by-project.md#ocr-review) |
 
 ## layout
 
@@ -590,12 +718,22 @@
 | Design-system values outside the public surface lie | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 | Component library first, custom markup only with a stated reason | preference | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 | UModal in Nuxt UI v4 binds v-model:open, not v-model | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Whole-repo OCR review recipe; verify LLM review findings before acting | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 
 ## observability
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | Check the artifact a run produces, not the liveness of the process | lesson | 0 | [camera-nvr](by-project.md#camera-nvr) |
+
+## ocr
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Stelele/ocr-review shared workflow: secrets must exist in the shared repo itself | lesson | 0 | [all](by-project.md#all) |
+| OCR verdict sweeper: in-place fixes now auto-resolved; resolve_outdated only sees line deletions | lesson | 0 | [ocr-review](by-project.md#ocr-review), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+| Jev noul screen validates against OCR backlog: 0 false resolves, catches bad resolves both directions | lesson | 0 | [ocr-review](by-project.md#ocr-review), [erpnext-dashboard](by-project.md#erpnext-dashboard), [erpnext-point-of-sale-expenses](by-project.md#erpnext-point-of-sale-expenses) |
+| Jev screen default flipped to ON (per-repo opt-out) — opt-in made the default the expensive path | decision | 0 | [ocr-review](by-project.md#ocr-review) |
 
 ## offline
 
@@ -622,6 +760,7 @@
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | OpenCode agent models live in two homes — opencode.json and markdown frontmatter | lesson | 0 | [model-router](by-project.md#model-router) |
+| Whole-repo OCR review recipe; verify LLM review findings before acting | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 
 ## orm
 
@@ -629,11 +768,36 @@
 | --- | --- | --- | --- |
 | Bulk applies tell three truths: applied, already-settled, blocked | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 
+## payments
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Frappe: company-scoped gateway accounts, hook timing, test isolation, ruff target-version | lesson | 0 | [pesepay](by-project.md#pesepay), [frappe](by-project.md#frappe) |
+| Gateway integrations: handle every terminal-not-paid status, not just FAILED | lesson | 0 | [pesepay](by-project.md#pesepay), [frappe](by-project.md#frappe) |
+
+## permissions
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Check an app's installer.py before assuming token capability | lesson | 0 | [erpnext-dashboard](by-project.md#erpnext-dashboard), [awesome-dashboard](by-project.md#awesome-dashboard) |
+
+## pesepay
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Gateway integrations: handle every terminal-not-paid status, not just FAILED | lesson | 0 | [pesepay](by-project.md#pesepay), [frappe](by-project.md#frappe) |
+
 ## pinia
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | Pinia stores use composition syntax and check error | preference | 3 | [cms-system](by-project.md#cms-system), [personal-site](by-project.md#personal-site), [njeremoto-operations](by-project.md#njeremoto-operations) |
+
+## pitfalls
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| EF Core SQLite: ExecuteDelete cannot translate predicates over converted columns | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 
 ## playwright
 
@@ -642,6 +806,14 @@
 | Settle sync-draining e2e on outbox truth, not clicks | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 | Shard Playwright e2e with a full stack per shard | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 | Real-browser rail: crawl boards from inside the user's own Chrome (CDP/Xvfb), never against the wall | lesson | 0 | [remote-first-corpus](by-project.md#remote-first-corpus), [corpus-pipelines](by-project.md#corpus-pipelines) |
+
+## pos
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| ERPNext v16 POS Invoice mode: stock posts at POS Closing, not at checkout | lesson | 0 | [awesome_butchery](by-project.md#awesome-butchery), [pos_expenses](by-project.md#pos-expenses) |
+| Frappe: company-scoped gateway accounts, hook timing, test isolation, ruff target-version | lesson | 0 | [pesepay](by-project.md#pesepay), [frappe](by-project.md#frappe) |
+| Gateway integrations: handle every terminal-not-paid status, not just FAILED | lesson | 0 | [pesepay](by-project.md#pesepay), [frappe](by-project.md#frappe) |
 
 ## preview
 
@@ -693,6 +865,12 @@
 | --- | --- | --- | --- |
 | rclone sync against a rolling source erases the archive | lesson | 0 | [camera-nvr](by-project.md#camera-nvr), [njeremoto-operations](by-project.md#njeremoto-operations) |
 
+## race-condition
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| ERPNext v16 POS Invoice mode: stock posts at POS Closing, not at checkout | lesson | 0 | [awesome_butchery](by-project.md#awesome-butchery), [pos_expenses](by-project.md#pos-expenses) |
+
 ## rclone
 
 | title | kind | score | project links |
@@ -704,6 +882,12 @@
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | Ask only when a reading is not determined; determination is flow-level, assignment is a matching problem | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+
+## refunds
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Ported code verbatim is not correct code — fix ported defects against the target model | decision | 0 | [erpnext-dashboard](by-project.md#erpnext-dashboard), [awesome-dashboard](by-project.md#awesome-dashboard) |
 
 ## reporting
 
@@ -726,6 +910,17 @@
 | Three tests that passed for the wrong reason, and the one check that catches all three | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 | Replace CodeRabbit with OpenCodeReview across Stelele repos (ADR 0051 successor) | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 | Review gate is OpenCodeReview, and private repos meter every Actions minute | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Whole-repo OCR review recipe; verify LLM review findings before acting | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Reusable-workflow permission floors; workflow-YAML gotchas from the tier run | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| OCR verdict sweeper: in-place fixes now auto-resolved; resolve_outdated only sees line deletions | lesson | 0 | [ocr-review](by-project.md#ocr-review), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+| Jev noul screen validates against OCR backlog: 0 false resolves, catches bad resolves both directions | lesson | 0 | [ocr-review](by-project.md#ocr-review), [erpnext-dashboard](by-project.md#erpnext-dashboard), [erpnext-point-of-sale-expenses](by-project.md#erpnext-point-of-sale-expenses) |
+| Jev screen default flipped to ON (per-repo opt-out) — opt-in made the default the expensive path | decision | 0 | [ocr-review](by-project.md#ocr-review) |
+
+## ruff
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Frappe: company-scoped gateway accounts, hook timing, test isolation, ruff target-version | lesson | 0 | [pesepay](by-project.md#pesepay), [frappe](by-project.md#frappe) |
 
 ## scheduler
 
@@ -751,6 +946,12 @@
 | --- | --- | --- | --- |
 | Page permissions beat JS role gates | lesson | 3 | [awesome_restaurant3](by-project.md#awesome-restaurant3), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 
+## serialization
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| JSON casing across language boundaries is a wire contract | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+
 ## service-worker
 
 | title | kind | score | project links |
@@ -762,6 +963,12 @@
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | A name two sides each derive from a third will drift, and it drifts into silence | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+
+## sqlite
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| EF Core SQLite: ExecuteDelete cannot translate predicates over converted columns | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 
 ## stack
 
@@ -793,6 +1000,7 @@
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | IndexedDB readwrite transactions have no fairness: background workers starve interactive writes | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Background write paths must announce themselves to the read-refresh seam | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 
 ## tailwind
 
@@ -817,12 +1025,32 @@
 | Fixing a flake honestly: A/B it, and distrust every measurement you have not sanity-checked | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 | Test-gated deploys: prod ships only what e2e passed on | preference | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 | Dexie + Vue refs: clone before writing — real IndexedDB refuses proxies | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| "Frappe test harness: secondary_connection silently strands the primary connection" | lesson | 0 | [pos_expenses](by-project.md#pos-expenses) |
+| Frappe: company-scoped gateway accounts, hook timing, test isolation, ruff target-version | lesson | 0 | [pesepay](by-project.md#pesepay), [frappe](by-project.md#frappe) |
+| Smoke-test wire-adjacent code in a real browser before merge | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+
+## tooling
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Arcan is not FOSS; OSS CodeScene stack = CodeCharta (+dep lens) + Code Maat, installed globally | lesson | 0 | [all](by-project.md#all) |
+| Arcan is not FOSS; OSS CodeScene stack = CodeCharta (+dep lens) + Code Maat, installed globally | lesson | 0 | [all](by-project.md#all) |
+| Session executes static-analysis CLIs; agents only interpret the results (analyze-codebase) | preference | 0 | [all](by-project.md#all) |
+| Private cross-repo workflows fail silently; gh token 404 matrix | lesson | 0 | [erpnext-point-of-sale-expenses](by-project.md#erpnext-point-of-sale-expenses), [ocr-review](by-project.md#ocr-review), [papi_iot](by-project.md#papi-iot), [breakout](by-project.md#breakout) |
 
 ## tools
 
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | OpenCode Go API via external tools: session header requirement and OCR header config traps | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Whole-repo OCR review recipe; verify LLM review findings before acting | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+
+## transactions
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Frappe: doc_events handlers cannot control transactions — use extend_doctype_class | lesson | 0 | [pos_expenses](by-project.md#pos-expenses) |
+| "Frappe test harness: secondary_connection silently strands the primary connection" | lesson | 0 | [pos_expenses](by-project.md#pos-expenses) |
 
 ## transfers
 
@@ -835,6 +1063,12 @@
 | title | kind | score | project links |
 | --- | --- | --- | --- |
 | Quick tunnels for remote field testing | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+
+## typesafe
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Jev noul screen validates against OCR backlog: 0 false resolves, catches bad resolves both directions | lesson | 0 | [ocr-review](by-project.md#ocr-review), [erpnext-dashboard](by-project.md#erpnext-dashboard), [erpnext-point-of-sale-expenses](by-project.md#erpnext-point-of-sale-expenses) |
 
 ## typescript
 
@@ -853,6 +1087,12 @@
 | Move dense controls into the drawer on mobile | inspiration | 3 | [erpnext-dashboard](by-project.md#erpnext-dashboard), [njeremoto-operations](by-project.md#njeremoto-operations), [personal-site](by-project.md#personal-site) |
 | Virtualized windows are the pattern for growing lists in Vue apps | preference | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 
+## ux
+
+| title | kind | score | project links |
+| --- | --- | --- | --- |
+| Gateway integrations: handle every terminal-not-paid status, not just FAILED | lesson | 0 | [pesepay](by-project.md#pesepay), [frappe](by-project.md#frappe) |
+
 ## validation
 
 | title | kind | score | project links |
@@ -866,6 +1106,7 @@
 | Check the artifact a run produces, not the liveness of the process | lesson | 0 | [camera-nvr](by-project.md#camera-nvr) |
 | A green deploy can be a no-op when the image tag is mutable | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 | Fixing a flake honestly: A/B it, and distrust every measurement you have not sanity-checked | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Verify against the tree the runtime serves, not your repo checkout | lesson | 0 | [erpnext-dashboard](by-project.md#erpnext-dashboard), [awesome-dashboard](by-project.md#awesome-dashboard) |
 
 ## vue
 
@@ -880,6 +1121,8 @@
 | Virtualized windows are the pattern for growing lists in Vue apps | preference | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 | UModal in Nuxt UI v4 binds v-model:open, not v-model | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 | Dexie + Vue refs: clone before writing — real IndexedDB refuses proxies | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| Whole-repo OCR review recipe; verify LLM review findings before acting | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
+| JSON casing across language boundaries is a wire contract | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 
 ## workflow
 
@@ -893,6 +1136,7 @@
 | Never recover a rejected push by rebasing the user's history | lesson | 0 | [hivemind](by-project.md#hivemind) |
 | hm cannot take a post the final leg onto main | question | 0 | [hivemind](by-project.md#hivemind) |
 | hm post finishes the journey: branch, PR, rebase-merge | decision | 1 | [hivemind](by-project.md#hivemind) |
+| Squash merges enabled account-wide; merge commits off | decision | 0 | [hivemind](by-project.md#hivemind), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
 
 ## workmanager
 
@@ -906,6 +1150,7 @@
 | --- | --- | --- | --- |
 | Unquoted {VAR} in YAML is a flow mapping, not a placeholder | lesson | 0 | [camera-nvr](by-project.md#camera-nvr) |
 | Correction: quoting a YAML placeholder is necessary but not sufficient | observation | 0 | [camera-nvr](by-project.md#camera-nvr) |
+| Reusable-workflow permission floors; workflow-YAML gotchas from the tier run | lesson | 0 | [njeremoto-operations](by-project.md#njeremoto-operations) |
 
 ## zod
 
