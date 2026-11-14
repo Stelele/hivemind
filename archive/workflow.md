@@ -67,3 +67,38 @@ but never read, the automation is theatre and you find out about it in productio
 
 Extra turns per PR, and some comments will be wrong. Disagreement is allowed — but it
 has to be argued in a reply on the PR, not silently ignored.
+
+## Rebase merges only; linear history
+
+**Withdrawn** 2026-11-14 by [ADR 0055-squash-merges-enabled-account-wide-merge-commits.md](../decisions/0055-squash-merges-enabled-account-wide-merge-commits.md).
+
+Owner chose squash-merge availability account-wide: one commit after merge; rebase stays selectable
+
+### What I hit
+
+Merge commits were accumulating noise in otherwise linear histories.
+
+### What we decided
+
+**Rebase merges only.** Disable merge commits *and* squash; leave rebase enabled.
+
+```
+allow_rebase_merge: true
+allow_merge_commit: false
+allow_squash_merge: false
+```
+
+### Why
+
+The repo already commits one logical change per commit (ADR 0006), so rebase preserves
+exactly the history you meant to write. Squash would re-flatten those commits and throw
+away the boundaries; merge commits add a commit per PR that says nothing.
+
+### The cost
+
+You must keep PR branches tidy — every commit on a PR branch lands on the default
+branch as-is. A PR with fixup commits lands as fixup commits. Batching your own
+amendments locally before pushing is now part of the workflow.
+
+Squash is off deliberately. If you would rather keep squash available for PRs that
+accumulate noisy fixups, say so and this ADR gets superseded.
