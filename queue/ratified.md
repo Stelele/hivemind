@@ -23,3 +23,4 @@
 - 2026-10-16 | 20261016-1431-repository-baseline-auto-delete-merged-branches | ADR 0053
 - 2026-11-04 | 20261104-1537-review-gate-is-opencodereview-and-private-repos | ADR 0054
 - 2026-11-14 | 20261113-2048-squash-merges-enabled-account-wide-merge-commits | ADR 0055
+- 2026-11-14 | 20261113-2110-ocr-verdict-sweeper-in-place-fixes-now-auto-reso | ADR 0056
