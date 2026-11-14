@@ -165,6 +165,8 @@
 | hm cannot take a post the final leg onto main | question | 0 | [hivemind](by-project.md#hivemind) |
 | hm post finishes the journey: branch, PR, rebase-merge | decision | 1 | [hivemind](by-project.md#hivemind) |
 | Squash merges enabled account-wide; merge commits off | decision | 0 | [hivemind](by-project.md#hivemind), [cms-system](by-project.md#cms-system), [erpnext-dashboard](by-project.md#erpnext-dashboard) |
+| Core conflict flag: ADR 0049/0054 baseline sections still prescribe allow_squash_merge false | question | 0 | [hivemind](by-project.md#hivemind) |
+| Repository baseline restated: squash merges allowed, protection unchanged (withdraws the stale 0049/0054 squash lines) | decision | 0 | [hivemind](by-project.md#hivemind) |
 
 ## model-router
 

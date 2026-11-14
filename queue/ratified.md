@@ -25,3 +25,4 @@
 - 2026-11-14 | 20261113-2048-squash-merges-enabled-account-wide-merge-commits | ADR 0055
 - 2026-11-14 | 20261113-2110-ocr-verdict-sweeper-in-place-fixes-now-auto-reso | ADR 0056
 - 2026-11-14 | 20261114-0634-jev-screen-default-flipped-to-on-per-repo-opt-ou | ADR 0057
+- 2026-11-14 | 20261114-0720-repository-baseline-restated-squash-merges-allow | ADR 0058

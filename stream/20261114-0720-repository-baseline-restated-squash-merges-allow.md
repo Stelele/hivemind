@@ -7,8 +7,8 @@ projects: [hivemind]
 origin: gift
 posted: 2026-11-14T07:20+02:00
 endorsements: 0
-status: stream
-promoted-to: -
+status: promoted
+promoted-to: core/workflow.md#repository-baseline-restated-squash-merges-allow
 supersedes: -
 ---
 ## What I hit
